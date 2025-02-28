@@ -99,7 +99,7 @@ export default class Game {
 		const groundEntity = registry.create();
 		registry.add(groundEntity, new Transform(new Vec2(0, -5)));
 		registry.add(groundEntity, new Rigidbody());
-		registry.add(groundEntity, new RectangleCollider(20, 1.5));
+		registry.add(groundEntity, new RectangleCollider(40, 1.5));
 		registry.add(groundEntity, new Renderable());
 		registry.add(groundEntity, new ColorTag(0x00ff00));
 

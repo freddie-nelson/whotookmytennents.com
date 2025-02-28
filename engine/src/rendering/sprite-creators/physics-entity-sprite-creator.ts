@@ -21,7 +21,7 @@ export default class PhysicsEntitySpriteCreator implements SpriteCreator {
 		this.rigidbodyOpacity = rigidbodyOpacity;
 	}
 
-	public readonly create: SpriteCreatorCreate = ({ registry, app, entity }) => {
+	public readonly create: SpriteCreatorCreate = ({ registry, world, entity }) => {
 		const e = registry.get(entity);
 
 		const transform = Entity.getComponent(e, Transform);
@@ -29,7 +29,7 @@ export default class PhysicsEntitySpriteCreator implements SpriteCreator {
 		const colorTag = Entity.getComponentOrNull(e, ColorTag);
 
 		const s = new Graphics();
-		app.stage.addChild(s);
+		world.addChild(s);
 
 		s.position.set(transform.position.x, transform.position.y);
 		s.rotation = transform.rotation;
