@@ -13,64 +13,64 @@ import { useEffect, useState } from "react";
 import { ColyseusClient } from "@/api/colyseus";
 
 export function useGame(state: State | null, player?: Player, room?: Room<State>) {
-  const [game, setGame] = useState<Game | null>(null);
-  const [renderer, setRenderer] = useState<Renderer | null>(null);
-  const [isReady, setIsReady] = useState(false);
+	const [game, setGame] = useState<Game | null>(null);
+	const [renderer, setRenderer] = useState<Renderer | null>(null);
+	const [isReady, setIsReady] = useState(false);
 
-  useEffect(() => {
-    if (!state || !player) {
-      return;
-    }
+	useEffect(() => {
+		if (!state || !player) {
+			return;
+		}
 
-    setIsReady(false);
+		setIsReady(false);
 
-    const game = new Game({
-      ...sharedEngineOptions,
-      type: EngineType.CLIENT,
-      state: state,
-      autoStart: true,
-    });
-    setGame(game);
+		const game = new Game({
+			...sharedEngineOptions,
+			type: EngineType.CLIENT,
+			state: state,
+			autoStart: true,
+		});
+		setGame(game);
 
-    const renderer = new Renderer({
-      autoInit: false,
-      autoSize: true,
-      backgroundColor: 0x000000,
-    });
-    renderer.registerSpriteCreator(new PhysicsEntitySpriteCreator(0xff0000));
-    renderer.camera.zoom = 0.5;
+		const renderer = new Renderer({
+			autoInit: false,
+			autoSize: true,
+			backgroundColor: 0x000000,
+		});
+		renderer.registerSpriteCreator(new PhysicsEntitySpriteCreator(0xff0000));
+		renderer.camera.zoom = 0.5;
 
-    setRenderer(renderer);
+		setRenderer(renderer);
 
-    game.registry.addSystem(renderer);
+		game.registry.addSystem(renderer);
 
-    game.registry.addSystem(new MoveSystem(player, room, () => (room ? ColyseusClient.getPing(room.id) : 0)));
+		game.registry.addSystem(new MoveSystem(player, room, () => (room ? ColyseusClient.getPing(room.id) : 0)));
 
-    // initalise async engine dependencies
-    new Promise<void>(async (resolve) => {
-      Keyboard.enable();
-      Mouse.enable();
+		// initalise async engine dependencies
+		new Promise<void>(async (resolve) => {
+			Keyboard.enable();
+			Mouse.enable();
 
-      await renderer.init();
+			await renderer.init();
 
-      resolve();
-    })
-      .then(() => {
-        setIsReady(true);
-      })
-      .catch((error) => {
-        console.error(error);
-        alert(`An error occurred while starting the game: ${error.message}`);
-      });
+			resolve();
+		})
+			.then(() => {
+				setIsReady(true);
+			})
+			.catch((error) => {
+				console.error(error);
+				alert(`An error occurred while starting the game: ${error.message}`);
+			});
 
-    return () => {
-      setIsReady(false);
-      setGame(null);
-      setRenderer(null);
+		return () => {
+			setIsReady(false);
+			setGame(null);
+			setRenderer(null);
 
-      return game?.destroy();
-    };
-  }, [state, player, room]);
+			return game?.destroy();
+		};
+	}, [state, player, room]);
 
-  return [game, renderer, isReady && game !== null && renderer !== null] as const;
+	return [game, renderer, isReady && game !== null && renderer !== null] as const;
 }
