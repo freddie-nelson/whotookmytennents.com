@@ -12,69 +12,71 @@ import { Room } from "colyseus.js";
 import { useEffect, useState } from "react";
 import { ColyseusClient } from "@/api/colyseus";
 import { Transform } from "@engine/src/core/transform";
+import { AttackSystem } from "@game/src/systems/attackSystem";
 
 export function useGame(state: State | null, player?: Player, room?: Room<State>) {
-  const [game, setGame] = useState<Game | null>(null);
-  const [renderer, setRenderer] = useState<Renderer | null>(null);
-  const [isReady, setIsReady] = useState(false);
+	const [game, setGame] = useState<Game | null>(null);
+	const [renderer, setRenderer] = useState<Renderer | null>(null);
+	const [isReady, setIsReady] = useState(false);
 
-  useEffect(() => {
-    if (!state || !player) {
-      return;
-    }
+	useEffect(() => {
+		if (!state || !player) {
+			return;
+		}
 
-    setIsReady(false);
+		setIsReady(false);
 
-    const game = new Game({
-      ...sharedEngineOptions,
-      type: EngineType.CLIENT,
-      state: state,
-      autoStart: true,
-    });
-    setGame(game);
+		const game = new Game({
+			...sharedEngineOptions,
+			type: EngineType.CLIENT,
+			state: state,
+			autoStart: true,
+		});
+		setGame(game);
 
-    const renderer = new Renderer({
-      autoInit: false,
-      autoSize: true,
-      backgroundColor: 0xffffff,
-    });
+		const renderer = new Renderer({
+			autoInit: false,
+			autoSize: true,
+			backgroundColor: 0xffffff,
+		});
 
-    const spriteCreator = new PhysicsEntitySpriteCreator(0xff0000);
-    renderer.registerSpriteCreator(spriteCreator);
+		const spriteCreator = new PhysicsEntitySpriteCreator(0xff0000);
+		renderer.registerSpriteCreator(spriteCreator);
 
-    renderer.camera.options.zoom = 0.5;
-    renderer.getCameraTarget = () => game.registry.get(player.entity, Transform).position;
+		renderer.camera.options.zoom = 0.5;
+		renderer.getCameraTarget = () => game.registry.get(player.entity, Transform).position;
 
-    setRenderer(renderer);
+		setRenderer(renderer);
 
-    game.registry.addSystem(renderer);
-    game.registry.addSystem(new MoveSystem(player, room, () => (room ? ColyseusClient.getPing(room.id) : 0)));
+		game.registry.addSystem(renderer);
+		game.registry.addSystem(new MoveSystem(player, room, () => (room ? ColyseusClient.getPing(room.id) : 0)));
+		game.registry.addSystem(new AttackSystem(player, room, () => (room ? ColyseusClient.getPing(room.id) : 0)));
 
-    // initalise async engine dependencies
-    new Promise<void>(async (resolve) => {
-      Keyboard.enable();
-      Mouse.enable();
+		// initalise async engine dependencies
+		new Promise<void>(async (resolve) => {
+			Keyboard.enable();
+			Mouse.enable();
 
-      await renderer.init();
+			await renderer.init();
 
-      resolve();
-    })
-      .then(() => {
-        setIsReady(true);
-      })
-      .catch((error) => {
-        console.error(error);
-        alert(`An error occurred while starting the game: ${error.message}`);
-      });
+			resolve();
+		})
+			.then(() => {
+				setIsReady(true);
+			})
+			.catch((error) => {
+				console.error(error);
+				alert(`An error occurred while starting the game: ${error.message}`);
+			});
 
-    return () => {
-      setIsReady(false);
-      setGame(null);
-      setRenderer(null);
+		return () => {
+			setIsReady(false);
+			setGame(null);
+			setRenderer(null);
 
-      return game?.destroy();
-    };
-  }, [state, player, room]);
+			return game?.destroy();
+		};
+	}, [state, player, room]);
 
-  return [game, renderer, isReady && game !== null && renderer !== null] as const;
+	return [game, renderer, isReady && game !== null && renderer !== null] as const;
 }

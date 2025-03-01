@@ -5,8 +5,10 @@ import { router } from "./router";
 
 import "./styles/index.scss";
 
+document.addEventListener("contextmenu", (event) => event.preventDefault());
+
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <RouterProvider router={router} />
-  </StrictMode>
+	<StrictMode>
+		<RouterProvider router={router} />
+	</StrictMode>
 );

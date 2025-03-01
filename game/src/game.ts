@@ -1,5 +1,15 @@
 import Engine, { EngineOptions } from "@engine/src/engine";
-import { ActionType, movePlayerAction, movePlayerActionValidator } from "./actions";
+import {
+	ActionType,
+	combatAttackAction,
+	combatAttackActionValidator,
+	movePlayerAction,
+	movePlayerActionValidator,
+	portalAttackAction,
+	portalAttackActionValidator,
+	toggleAttackModeAction,
+	toggleAttackModeActionValidator,
+} from "./actions";
 import { PlayerSystem } from "./systems/playerSystem";
 import Player from "@state/src/Player";
 import { Vec2 } from "@engine/src/math/vec";
@@ -9,6 +19,7 @@ import { Renderable } from "@engine/src/rendering/renderable";
 import { Transform } from "@engine/src/core/transform";
 import { ColorTag } from "@engine/src/rendering/colorTag";
 import { GROUND_GROUP } from "@shared/src/groups";
+import { PlayerComponent } from "./components/player";
 
 export default class Game {
 	private readonly options: EngineOptions;
@@ -34,6 +45,13 @@ export default class Game {
 	public start() {
 		// initialise game here
 		this._engine.actions.register(ActionType.MOVE_PLAYER, movePlayerAction, movePlayerActionValidator);
+		this._engine.actions.register(
+			ActionType.TOGGLE_ATTACK_MODE,
+			toggleAttackModeAction,
+			toggleAttackModeActionValidator
+		);
+		this._engine.actions.register(ActionType.PORTAL_ATTACK, portalAttackAction, portalAttackActionValidator);
+		this._engine.actions.register(ActionType.COMBAT_ATTACK, combatAttackAction, combatAttackActionValidator);
 
 		this.registry.addSystem(new PlayerSystem(this.options.state.players));
 
@@ -84,6 +102,7 @@ export default class Game {
 		registry.add(playerEntity, new RectangleCollider(1.5, 1.5));
 		registry.add(playerEntity, new Renderable());
 		registry.add(playerEntity, new ColorTag(0xff0000));
+		registry.add(playerEntity, new PlayerComponent());
 
 		const rigidbody = registry.get(playerEntity, Rigidbody);
 		rigidbody.inertia = Infinity;
