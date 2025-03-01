@@ -307,8 +307,6 @@ export class PhysicsWorld extends System {
     if (collider) {
       Collider.setBody(collider, body);
 
-      console.log(body.collisionFilter.group, body.collisionFilter.category, body.collisionFilter.mask);
-
       Collider.setSensor(collider, collider.isSensor);
       Collider.setCollisionGroup(collider, collider.group);
       Collider.setCollisionCategory(collider, collider.category);
