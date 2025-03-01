@@ -1,34 +1,49 @@
 import { ActionDataValidator, ActionHandler } from "@engine/src/core/actions";
+import { Transform } from "@engine/src/core/transform";
 import { Vec2 } from "@engine/src/math/vec";
+import { RectangleCollider } from "@engine/src/physics/collider";
 import { Rigidbody } from "@engine/src/physics/rigidbody";
+import { GROUND_GROUP } from "@shared/src/groups";
 import Player from "@state/src/Player";
 
 export enum ActionType {
-  MOVE_PLAYER,
+	MOVE_PLAYER,
 }
 
 export const PLAYER_MOVE_FORCE = 0.000004;
+export const PLAYER_JUMP_FORCE = 0.00004;
 
 export interface MovePlayerData {
-  player: Player;
-  dir: Vec2;
+	player: Player;
+	dir: Vec2;
 }
 
 export const movePlayerAction: ActionHandler<ActionType, MovePlayerData> = (engine, action, data, dt) => {
-  const { player, dir } = data;
-  if (!player || !dir) {
-    return;
-  }
+	const { player, dir } = data;
+	if (!player || !dir) {
+		return;
+	}
 
-  const registry = engine.registry;
-  if (!registry.has(player.entity)) {
-    return;
-  }
+	const registry = engine.registry;
+	if (!registry.has(player.entity)) {
+		return;
+	}
 
-  const rigidbody = registry.get(player.entity, Rigidbody);
-  Rigidbody.applyForce(rigidbody, Vec2.mul(Vec2.normalize(dir), PLAYER_MOVE_FORCE));
+	const rigidbody = registry.get(player.entity, Rigidbody);
+	const transform = registry.get(player.entity, Transform);
+	const collider = registry.get(player.entity, RectangleCollider);
+
+	const groundCollisions = engine.physics.queryRay(transform.position, new Vec2(0, -1), (collider.height / 2) * 1.05);
+	const isGrounded = groundCollisions.some((c) => c.bodyA.collisionFilter.group === GROUND_GROUP);
+
+	console.log(groundCollisions);
+	if (dir.y === 1 && isGrounded) {
+		Rigidbody.applyForce(rigidbody, new Vec2(0, PLAYER_JUMP_FORCE));
+	}
+
+	Rigidbody.applyForce(rigidbody, new Vec2(dir.x * PLAYER_MOVE_FORCE, 0));
 };
 
 export const movePlayerActionValidator: ActionDataValidator<ActionType> = (action, data) => {
-  return data.player && data.dir && typeof data.player === "object" && typeof data.dir === "object";
+	return data.player && data.dir && typeof data.player === "object" && typeof data.dir === "object";
 };

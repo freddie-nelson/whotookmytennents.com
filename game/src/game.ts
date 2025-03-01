@@ -8,6 +8,7 @@ import { CircleCollider, RectangleCollider } from "@engine/src/physics/collider"
 import { Renderable } from "@engine/src/rendering/renderable";
 import { Transform } from "@engine/src/core/transform";
 import { ColorTag } from "@engine/src/rendering/colorTag";
+import { GROUND_GROUP } from "@shared/src/groups";
 
 export default class Game {
 	private readonly options: EngineOptions;
@@ -85,6 +86,7 @@ export default class Game {
 		registry.add(playerEntity, new ColorTag(0xff0000));
 
 		const rigidbody = registry.get(playerEntity, Rigidbody);
+		rigidbody.inertia = Infinity;
 		rigidbody.frictionAir = 0.01;
 		rigidbody.friction = 0.05;
 
@@ -105,6 +107,9 @@ export default class Game {
 
 		const rigidbody = registry.get(groundEntity, Rigidbody);
 		rigidbody.isStatic = true;
+
+		const collider = registry.get(groundEntity, RectangleCollider);
+		collider.group = GROUND_GROUP;
 
 		return groundEntity;
 	}
