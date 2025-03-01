@@ -2,7 +2,12 @@
 export default {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
-    extend: {},
+    extend: {
+      colors : {
+        tred : '#B23602',
+        tyellow : '#ffce00'
+      }
+    },
   },
   plugins: [],
 };

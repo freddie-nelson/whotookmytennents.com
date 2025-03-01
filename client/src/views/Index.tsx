@@ -47,18 +47,18 @@ export function Index() {
   };
 
   return (
-    <main className="w-full h-screen flex flex-col justify-center items-center p-4">
-      <h1 className="text-6xl font-bold text-blue-600 mb-8">Emile Demo</h1>
+    <main className="w-full h-screen flex flex-col justify-center items-center p-4 bg-[url('static/cosy-pub.jpeg')] bg-no-repeat bg-cover bg-center">
+      <h1 className="text-6xl font-bold bg-tyellow text-tred mb-8 px-2">Who Took Ma Tennents?</h1>
 
       {isConnecting && <LoadingOverlay text="Connecting" />}
 
       <div className="flex flex-col gap-4 max-w-md w-full">
         <div className="flex flex-col">
-          <label className="text-lg font-bold text-blue-600" htmlFor="name">
+          <label className="text-lg font-bold text-tred flex bg-tyellow " htmlFor="name">
             Username
           </label>
           <input
-            className="border border-blue-600 rounded-md p-3 text-lg"
+            className="border border-blue-600 rounded-md p-3 text-lg flex flex-col"
             name="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
