@@ -26,6 +26,8 @@ export const movePlayerAction: ActionHandler<ActionType, MovePlayerData> = (engi
     return;
   }
 
+  player.dir = dir;
+
   const registry = engine.registry;
   if (!registry.has(player.entity)) {
     return;
