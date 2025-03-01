@@ -7,99 +7,106 @@ import { Transform } from "../../core/transform";
 import { Logger } from "@shared/src/Logger";
 import { Entity } from "../../ecs/entity";
 import { ColorTag } from "../colorTag";
+import { Vec2 } from "../../math/vec";
+import { lerp } from "../../math/lerp";
+import { CLIENT_LERP_RATE } from "../../engine";
 
 export default class PhysicsEntitySpriteCreator implements SpriteCreator {
-	public readonly query = new Set([Transform, Rigidbody]);
+  public readonly query = new Set([Transform, Rigidbody]);
 
-	private readonly defaultColor: ColorSource;
-	private readonly rigidbodyRadius: number;
-	private readonly rigidbodyOpacity: number;
+  private readonly defaultColor: ColorSource;
+  private readonly rigidbodyRadius: number;
+  private readonly rigidbodyOpacity: number;
 
-	constructor(defaultColor: ColorSource, rigidbodyRadius = 0.1, rigidbodyOpacity = 0.5) {
-		this.defaultColor = defaultColor;
-		this.rigidbodyRadius = rigidbodyRadius;
-		this.rigidbodyOpacity = rigidbodyOpacity;
-	}
+  constructor(defaultColor: ColorSource, rigidbodyRadius = 0.1, rigidbodyOpacity = 0.5) {
+    this.defaultColor = defaultColor;
+    this.rigidbodyRadius = rigidbodyRadius;
+    this.rigidbodyOpacity = rigidbodyOpacity;
+  }
 
-	public readonly create: SpriteCreatorCreate = ({ registry, world, entity }) => {
-		const e = registry.get(entity);
+  public readonly create: SpriteCreatorCreate = ({ registry, world, entity }) => {
+    const e = registry.get(entity);
 
-		const transform = Entity.getComponent(e, Transform);
-		const collider = PhysicsWorld.getCollider(e);
-		const colorTag = Entity.getComponentOrNull(e, ColorTag);
+    const transform = Entity.getComponent(e, Transform);
+    const collider = PhysicsWorld.getCollider(e);
+    const colorTag = Entity.getComponentOrNull(e, ColorTag);
 
-		const s = new Graphics();
-		world.addChild(s);
+    const s = new Graphics();
+    world.addChild(s);
 
-		s.position.set(transform.position.x, transform.position.y);
-		s.rotation = transform.rotation;
-		s.scale.set(transform.scale.x, transform.scale.y);
-		s.zIndex = transform.zIndex;
+    const position = Vec2.lerp(new Vec2(s.position.x, s.position.y), transform.position, 0.2);
+    s.position.set(position.x, position.y);
 
-		if (!collider) {
-			s.circle(0, 0, this.rigidbodyRadius);
-			s.alpha = this.rigidbodyOpacity;
-			s.fill(colorTag?.color || this.defaultColor);
-			s.pivot.set(0, 0);
-			return s;
-		}
+    s.rotation = transform.rotation;
+    s.scale.set(transform.scale.x, transform.scale.y);
+    s.zIndex = transform.zIndex;
 
-		switch (collider.type) {
-			case ColliderType.CIRCLE: {
-				const circle = collider as CircleCollider;
-				s.circle(0, 0, circle.radius);
-				break;
-			}
-			case ColliderType.RECTANGLE: {
-				const rect = collider as RectangleCollider;
-				s.rect(0, 0, rect.width, rect.height);
-				break;
-			}
-			case ColliderType.POLYGON: {
-				const poly = collider as PolygonCollider;
-				s.poly(poly.vertices);
-				break;
-			}
-			default: {
-				Logger.errorAndThrow(
-					"RENDERER",
-					`Unsupported collider type in physics entity sprite creator: ${collider.type}`
-				);
-			}
-		}
+    if (!collider) {
+      s.circle(0, 0, this.rigidbodyRadius);
+      s.alpha = this.rigidbodyOpacity;
+      s.fill(colorTag?.color || this.defaultColor);
+      s.pivot.set(0, 0);
+      return s;
+    }
 
-		s.fill(colorTag?.color || this.defaultColor);
+    switch (collider.type) {
+      case ColliderType.CIRCLE: {
+        const circle = collider as CircleCollider;
+        s.circle(0, 0, circle.radius);
+        break;
+      }
+      case ColliderType.RECTANGLE: {
+        const rect = collider as RectangleCollider;
+        s.rect(0, 0, rect.width, rect.height);
+        break;
+      }
+      case ColliderType.POLYGON: {
+        const poly = collider as PolygonCollider;
+        s.poly(poly.vertices);
+        break;
+      }
+      default: {
+        Logger.errorAndThrow(
+          "RENDERER",
+          `Unsupported collider type in physics entity sprite creator: ${collider.type}`
+        );
+      }
+    }
 
-		this.setPivot(s, collider.type);
+    s.fill(colorTag?.color || this.defaultColor);
 
-		return s;
-	};
+    this.setPivot(s, collider.type);
 
-	public readonly update: SpriteCreatorUpdate = ({ registry, app, entity, sprite, dt }) => {
-		const e = registry.get(entity);
-		const s = sprite!;
+    return s;
+  };
 
-		const collider = PhysicsWorld.getCollider(e);
-		const transform = Entity.getComponent(e, Transform);
+  public readonly update: SpriteCreatorUpdate = ({ registry, app, entity, sprite, dt }) => {
+    const e = registry.get(entity);
+    const s = sprite!;
 
-		s.position.set(transform.position.x, transform.position.y);
-		s.rotation = transform.rotation;
-		s.scale.set(transform.scale.x, transform.scale.y);
-		s.zIndex = transform.zIndex;
+    const collider = PhysicsWorld.getCollider(e);
+    const transform = Entity.getComponent(e, Transform);
 
-		this.setPivot(s, collider?.type);
-	};
+    const position = Vec2.lerp(new Vec2(s.position.x, s.position.y), transform.position, CLIENT_LERP_RATE);
+    s.position.set(position.x, position.y);
 
-	public readonly delete: SpriteCreatorDelete = ({ registry, app, entity, sprite }) => {
-		sprite!.removeFromParent();
-		sprite!.destroy();
-	};
+    s.rotation = lerp(s.rotation, transform.rotation, CLIENT_LERP_RATE);
+    s.scale.set(transform.scale.x, transform.scale.y);
+    s.zIndex = transform.zIndex;
 
-	private setPivot(s: ContainerChild, colliderType?: ColliderType) {
-		if (colliderType === ColliderType.CIRCLE) {
-			s.pivot.set(0, 0);
-		} else {
-			s.pivot.set(s.width / 2, s.height / 2);
-		}
-	}
+    this.setPivot(s, collider?.type);
+  };
+
+  public readonly delete: SpriteCreatorDelete = ({ registry, app, entity, sprite }) => {
+    sprite!.removeFromParent();
+    sprite!.destroy();
+  };
+
+  private setPivot(s: ContainerChild, colliderType?: ColliderType) {
+    if (colliderType === ColliderType.CIRCLE) {
+      s.pivot.set(0, 0);
+    } else {
+      s.pivot.set(s.width / 2, s.height / 2);
+    }
+  }
 }

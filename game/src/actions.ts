@@ -7,7 +7,7 @@ export enum ActionType {
   MOVE_PLAYER,
 }
 
-export const PLAYER_MOVE_FORCE = 0.000004;
+export const PLAYER_MOVE_FORCE = 0.0004;
 
 export interface MovePlayerData {
   player: Player;
@@ -26,7 +26,7 @@ export const movePlayerAction: ActionHandler<ActionType, MovePlayerData> = (engi
   }
 
   const rigidbody = registry.get(player.entity, Rigidbody);
-  Rigidbody.applyForce(rigidbody, Vec2.mul(Vec2.normalize(dir), PLAYER_MOVE_FORCE));
+  Rigidbody.applyForce(rigidbody, Vec2.mul(Vec2.normalize(dir), PLAYER_MOVE_FORCE * dt));
 };
 
 export const movePlayerActionValidator: ActionDataValidator<ActionType> = (action, data) => {
