@@ -39,6 +39,8 @@ export enum UpdateCallbackType {
   POST_STATE_UPDATE,
 }
 
+export const CLIENT_LERP_RATE = 0.4;
+
 /**
  * The options for the engine.
  */
@@ -313,8 +315,8 @@ export default class Engine {
     // perform fixed updates
     const fixedDt = this.getFixedUpdateDelta() * this.timeScale;
     while (this.updateTimeAccumulator >= fixedDt) {
-      this.fixedUpdate(fixedDt);
       this.updateTimeAccumulator -= fixedDt;
+      this.fixedUpdate(fixedDt);
     }
 
     // pre
