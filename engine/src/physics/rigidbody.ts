@@ -29,6 +29,10 @@ export class Rigidbody extends Component {
         Matter.Body.setStatic(rigidbody.body, rigidbody.isStatic);
       }
 
+      if (rigidbody.inertia !== rigidbody.body.inertia) {
+        Matter.Body.setInertia(rigidbody.body, rigidbody.inertia);
+      }
+
       rigidbody.body.restitution = rigidbody.restitution;
       rigidbody.body.friction = rigidbody.friction;
       rigidbody.body.frictionAir = rigidbody.frictionAir;
@@ -39,6 +43,7 @@ export class Rigidbody extends Component {
   @type(Vec2) public velocity: Vec2 = new Vec2();
   @type("float32") public angularVelocity: number = 0;
   @type("float32") public density: number = 0.01;
+  @type("float32") public inertia: number = 0;
   @type("float32") public restitution: number = 0;
   @type("float32") public friction: number = 0.1;
   @type("float32") public frictionAir: number = 0.01;
@@ -131,6 +136,20 @@ export class Rigidbody extends Component {
 
     if (rigidbody.body) {
       rigidbody.body.restitution = restitution;
+    }
+  }
+
+  /**
+   * Sets the inertia of the rigidbody.
+   *
+   * @param rigidbody The rigidbody.
+   * @param inertia The inertia to set.
+   */
+  public static setInertia(rigidbody: Rigidbody, inertia: number) {
+    rigidbody.inertia = inertia;
+
+    if (rigidbody.body) {
+      Matter.Body.setInertia(rigidbody.body, inertia);
     }
   }
 

@@ -26,11 +26,8 @@ export class MoveSystem extends System {
     }
 
     const dir = new Vec2();
-    if (Keyboard.isKeyDown("w")) {
+    if (Keyboard.isKeyPressedThisUpdate("w") || Keyboard.isKeyPressedThisUpdate(" ")) {
       dir.y += 1;
-    }
-    if (Keyboard.isKeyDown("s")) {
-      dir.y -= 1;
     }
     if (Keyboard.isKeyDown("d")) {
       dir.x += 1;

@@ -120,6 +120,10 @@ export class Vec2 extends Schema {
     return new Vec2(v.x, v.y);
   }
 
+  public static lerp(a: Vec2, b: Vec2, alpha: number): Vec2 {
+    return Vec2.add(a, Vec2.mul(Vec2.sub(b, a), alpha));
+  }
+
   public static equals(v: Vec2, vec: Vec2): boolean {
     return v.x === vec.x && v.y === vec.y;
   }

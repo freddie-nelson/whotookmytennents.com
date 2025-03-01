@@ -216,6 +216,35 @@ export class PhysicsWorld extends System {
     return new Vec2(this.engine.gravity.x, this.engine.gravity.y);
   }
 
+  /**
+   *	Queries the world for bodies that intersect with a ray.
+   *
+   * @param start The start of the ray.
+   * @param end The end of the ray.
+   *
+   * @returns The bodies that intersect with the ray.
+   */
+  public queryRay(start: Vec2, end: Vec2): Matter.Collision[];
+
+  /**
+   * Queries the world for bodies that intersect with a ray.
+   *
+   * @param origin The origin of the ray.
+   * @param dir The direction of the ray.
+   * @param len The length of the ray.
+   *
+   * @returns The bodies that intersect with the ray.
+   */
+  public queryRay(origin: Vec2, dir: Vec2, len: number): Matter.Collision[];
+
+  public queryRay(origin: Vec2, dir: Vec2, len?: number) {
+    if (typeof len === "number") {
+      return this.queryRay(origin, Vec2.add(origin, Vec2.mul(dir, len)));
+    } else {
+      return Matter.Query.ray(this.engine.world.bodies, origin, dir);
+    }
+  }
+
   private createBody(entity: Entity) {
     const transform = Entity.getComponent(entity, Transform);
     const rigidbody = Entity.getComponent(entity, Rigidbody);
@@ -269,6 +298,7 @@ export class PhysicsWorld extends System {
     Rigidbody.setAngularVelocity(rigidbody, rigidbody.angularVelocity);
     Rigidbody.setDensity(rigidbody, rigidbody.density);
     Rigidbody.setRestitution(rigidbody, rigidbody.restitution);
+    Rigidbody.setInertia(rigidbody, rigidbody.inertia);
     Rigidbody.setFriction(rigidbody, rigidbody.friction);
     Rigidbody.setFrictionAir(rigidbody, rigidbody.frictionAir);
     Rigidbody.setFrictionStatic(rigidbody, rigidbody.frictionStatic);
@@ -278,6 +308,9 @@ export class PhysicsWorld extends System {
       Collider.setBody(collider, body);
 
       Collider.setSensor(collider, collider.isSensor);
+      Collider.setCollisionGroup(collider, collider.group);
+      Collider.setCollisionCategory(collider, collider.category);
+      Collider.setCollisionMask(collider, collider.mask);
     }
 
     this.bodies.set(entity.id, body);

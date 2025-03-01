@@ -4,6 +4,7 @@ import { PhysicsWorld } from "./physics/world";
 import { Vec2 } from "./math/vec";
 import { Logger } from "@shared/src/Logger";
 import { ActionsManager } from "./core/actions";
+import { Keyboard } from "./input/keyboard";
 
 export enum EngineType {
   SERVER,
@@ -38,6 +39,8 @@ export enum UpdateCallbackType {
   PRE_STATE_UPDATE,
   POST_STATE_UPDATE,
 }
+
+export const CLIENT_LERP_RATE = 0.4;
 
 /**
  * The options for the engine.
@@ -114,7 +117,7 @@ const defaultEngineOptions: Partial<EngineOptions> = {
   positionIterations: 6,
   velocityIterations: 4,
   gravity: new Vec2(0, 0),
-  colliderSlop: 0.05,
+  colliderSlop: 0.02,
 };
 
 /**
@@ -313,8 +316,8 @@ export default class Engine {
     // perform fixed updates
     const fixedDt = this.getFixedUpdateDelta() * this.timeScale;
     while (this.updateTimeAccumulator >= fixedDt) {
-      this.fixedUpdate(fixedDt);
       this.updateTimeAccumulator -= fixedDt;
+      this.fixedUpdate(fixedDt);
     }
 
     // pre
@@ -325,6 +328,9 @@ export default class Engine {
 
     // post
     this.updateCallbacks.get(UpdateCallbackType.POST_UPDATE)?.forEach((callback) => callback(dt));
+
+    // clear key presses this update
+    Keyboard.clearKeyPressesThisUpdate();
 
     if (!this.options.manualUpdate) {
       requestAnimationFrame(() => this.update());

@@ -11,6 +11,7 @@ import { State } from "@state/src/state";
 import { Room } from "colyseus.js";
 import { useEffect, useState } from "react";
 import { ColyseusClient } from "@/api/colyseus";
+import { Transform } from "@engine/src/core/transform";
 
 export function useGame(state: State | null, player?: Player, room?: Room<State>) {
   const [game, setGame] = useState<Game | null>(null);
@@ -35,15 +36,18 @@ export function useGame(state: State | null, player?: Player, room?: Room<State>
     const renderer = new Renderer({
       autoInit: false,
       autoSize: true,
-      backgroundColor: 0x000000,
+      backgroundColor: 0xffffff,
     });
-    renderer.registerSpriteCreator(new PhysicsEntitySpriteCreator(0xff0000));
-    renderer.camera.zoom = 0.5;
+
+    const spriteCreator = new PhysicsEntitySpriteCreator(0xff0000);
+    renderer.registerSpriteCreator(spriteCreator);
+
+    renderer.camera.options.zoom = 0.5;
+    renderer.getCameraTarget = () => game.registry.get(player.entity, Transform).position;
 
     setRenderer(renderer);
 
     game.registry.addSystem(renderer);
-
     game.registry.addSystem(new MoveSystem(player, room, () => (room ? ColyseusClient.getPing(room.id) : 0)));
 
     // initalise async engine dependencies

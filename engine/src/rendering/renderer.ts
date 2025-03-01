@@ -2,10 +2,10 @@ import { System, SystemType, SystemUpdateData } from "../ecs/system";
 import { Transform } from "../core/transform";
 import { Registry } from "../ecs/registry";
 import { Entity, EntityQuery } from "../ecs/entity";
-import { Application, ApplicationOptions, ColorSource, ContainerChild } from "pixi.js";
+import { Application, ApplicationOptions, ColorSource, Container, ContainerChild } from "pixi.js";
 import { Logger } from "@shared/src/Logger";
 import { Renderable } from "./renderable";
-import { Camera } from "./camera";
+import { Camera, CameraOptions } from "./camera";
 import Engine from "../engine";
 
 export interface RendererOptions {
@@ -90,7 +90,7 @@ const defaultRendererOptions: Partial<RendererOptions> = {
   height: -1,
   autoSize: true,
   backgroundColor: "black",
-  scale: 50,
+  scale: 60,
   flipYAxis: true,
   enablePixiDevTools: false,
 };
@@ -100,6 +100,7 @@ export interface SpriteCreatorData {
   registry: Registry;
   renderer: Renderer;
   app: Application;
+  world: Container;
   entity: string;
   sprite: ContainerChild | null;
   dt: number;
@@ -114,7 +115,7 @@ export type SpriteCreatorDelete = (data: SpriteCreatorData) => void;
  *
  * Sprite creators are used to create, update and delete sprites in the renderer.
  *
- * @warning Your create and delete methods are responsible for adding/removing the sprite from the pixi stage. The renderer will not do this for you.
+ * @warning Your create and delete methods are responsible for adding/removing the sprite from the world container. The renderer will not do this for you.
  */
 export interface SpriteCreator {
   /**
@@ -170,9 +171,11 @@ export class Renderer extends System {
 
   private initialized = false;
   private app: Application | null = null;
+  private world: Container | null = null;
   private resizeObserver: ResizeObserver | null = null;
 
   public readonly camera: Camera = new Camera();
+  public getCameraTarget?: () => Required<CameraOptions>["target"];
 
   /**
    * Creates a new renderer.
@@ -197,7 +200,7 @@ export class Renderer extends System {
     this.updateSpriteCreators(engine, registry, entities, dt);
     this.updateCamera(engine, registry, dt);
 
-    this.app.render();
+    // this.app.render();
   };
 
   public dispose = () => {
@@ -222,6 +225,9 @@ export class Renderer extends System {
       width: this.options.width === -1 ? undefined : this.options.width,
       height: this.options.height === -1 ? undefined : this.options.height,
       backgroundColor: this.options.backgroundColor,
+      autoDensity: true,
+      antialias: false,
+      powerPreference: "high-performance",
     };
     await this.app.init(options);
 
@@ -236,6 +242,9 @@ export class Renderer extends System {
         app: this.app,
       };
     }
+
+    this.world = new Container();
+    this.app.stage.addChild(this.world);
   }
 
   public attach(parent: HTMLElement) {
@@ -340,20 +349,35 @@ export class Renderer extends System {
     return this.options.scale;
   }
 
+  public getSpriteFromCreator(creator: SpriteCreator, entity: string) {
+    if (!this.sprites.has(entity)) {
+      return null;
+    }
+
+    return this.sprites.get(entity)!.get(creator) || null;
+  }
+
   private updateCamera(engine: Engine, registry: Registry, dt: number) {
-    if (!this.app) {
+    if (!this.app || !this.world) {
       return;
     }
 
+    this.camera.options.target = this.getCameraTarget?.() || this.camera.options.target;
     this.camera.update(dt);
 
-    this.app.stage.scale.set(1);
-    this.app.stage.position.set(this.app.renderer.width / 2, this.app.renderer.height / 2);
+    const xScale = this.options.scale * this.camera.options.zoom;
+    const yScale = this.options.flipYAxis ? -xScale : xScale;
 
-    const scale = this.options.scale * this.camera.zoom;
-    this.app.stage.scale.set(scale, this.options.flipYAxis ? -scale : scale);
+    if (this.app.stage.scale.x !== xScale || this.app.stage.scale.y !== yScale) {
+      this.app.stage.scale.set(xScale, yScale);
+    }
 
-    this.app.stage.pivot.set(this.camera.worldCentre.x, this.camera.worldCentre.y);
+    this.world.position.set(
+      this.app.screen.width / 2 / this.app.stage.scale.x,
+      this.app.screen.height / 2 / this.app.stage.scale.y
+    );
+
+    this.world.pivot.set(this.camera.options.worldCentre.x, this.camera.options.worldCentre.y);
   }
 
   private updateSpriteCreators(engine: Engine, registry: Registry, entities: Set<string>, dt: number) {
@@ -420,6 +444,7 @@ export class Renderer extends System {
       registry,
       renderer: this,
       app: this.app!,
+      world: this.world!,
       entity,
       sprite,
       dt,

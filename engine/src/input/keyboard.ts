@@ -9,6 +9,7 @@ export type KeyListener = (key: string, pressed: boolean) => void;
 
 export abstract class Keyboard {
   private static readonly keys: Set<string> = new Set();
+  private static readonly keyPressThisUpdate: Set<string> = new Set();
   private static readonly keyListeners: Map<string, Map<KeyListenerType, Set<KeyListener>>> = new Map();
   private static caseSensitive: boolean = false;
   private static enabled = false;
@@ -122,17 +123,39 @@ export abstract class Keyboard {
     this.keyListeners.get(key)!.get(type)!.delete(listener);
   }
 
+  /**
+   * Clears all key presses that have been pressed this update.
+   *
+   * This should be called at the end of each update loop.
+   */
+  public static clearKeyPressesThisUpdate(): void {
+    this.keyPressThisUpdate.clear();
+  }
+
+  /**
+   * Checks if the key was pressed this update.
+   *
+   * @param key The key to check.
+   *
+   * @returns If the key was pressed this update.
+   */
+  public static isKeyPressedThisUpdate(key: string): boolean {
+    return this.keyPressThisUpdate.has(key);
+  }
+
   private static readonly keyDownListener = (event: KeyboardEvent) => {
     if (!this.enabled) {
       return;
     }
 
     const key = this.caseSensitive ? event.key : event.key.toLowerCase();
+
     if (this.keys.has(key)) {
       return;
     }
 
     this.keys.add(key);
+    this.keyPressThisUpdate.add(key);
 
     this.fireKeyEvent(key, KeyListenerType.DOWN);
     this.fireKeyEvent(key, KeyListenerType.DOWN_UP);
