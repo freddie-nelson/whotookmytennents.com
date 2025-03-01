@@ -1,5 +1,6 @@
 import { Transform } from "@engine/src/core/transform";
 import { System, SystemType, SystemUpdateData } from "@engine/src/ecs/system";
+import { Keyboard } from "@engine/src/input/keyboard";
 import { Vec2 } from "@engine/src/math/vec";
 import { RectangleCollider } from "@engine/src/physics/collider";
 import { Rigidbody } from "@engine/src/physics/rigidbody";
@@ -47,10 +48,11 @@ export class PlayerSystem extends System {
 
       if (isGrounded) {
         Rigidbody.setFrictionAir(rigidbody, 0.4);
-      } else if (isBlockedLeft || isBlockedRight) {
+      } else if ((isBlockedLeft && Keyboard.isKeyDown("a")) || (isBlockedRight && Keyboard.isKeyDown("d"))) {
         Rigidbody.setFrictionAir(rigidbody, 0.6);
       } else {
         Rigidbody.setFrictionAir(rigidbody, 0.05);
+        console.log("air");
       }
 
       // const t = registry.get(p.entity, Transform);

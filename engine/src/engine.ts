@@ -4,6 +4,7 @@ import { PhysicsWorld } from "./physics/world";
 import { Vec2 } from "./math/vec";
 import { Logger } from "@shared/src/Logger";
 import { ActionsManager } from "./core/actions";
+import { Keyboard } from "./input/keyboard";
 
 export enum EngineType {
   SERVER,
@@ -327,6 +328,9 @@ export default class Engine {
 
     // post
     this.updateCallbacks.get(UpdateCallbackType.POST_UPDATE)?.forEach((callback) => callback(dt));
+
+    // clear key presses this update
+    Keyboard.clearKeyPressesThisUpdate();
 
     if (!this.options.manualUpdate) {
       requestAnimationFrame(() => this.update());
