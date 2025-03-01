@@ -87,8 +87,8 @@ export default class Game {
 
 		const rigidbody = registry.get(playerEntity, Rigidbody);
 		rigidbody.inertia = Infinity;
-		rigidbody.frictionAir = 0.01;
-		rigidbody.friction = 0.05;
+		rigidbody.frictionAir = 0.2;
+		rigidbody.friction = 0;
 
 		player.entity = playerEntity;
 
