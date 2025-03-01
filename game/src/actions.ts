@@ -12,6 +12,7 @@ export enum ActionType {
 
 export const PLAYER_MOVE_FORCE = 0.4;
 export const PLAYER_JUMP_FORCE = 4;
+export const PLAYER_WALL_JUMP_FORCE = 0.5;
 
 export interface MovePlayerData {
 	player: Player;
@@ -41,8 +42,20 @@ export const movePlayerAction: ActionHandler<ActionType, MovePlayerData> = (engi
 	const isBlockedLeft = leftCollisions.some((c) => c.bodyA.collisionFilter.group === GROUND_GROUP);
 	const isBlockedRight = rightCollisions.some((c) => c.bodyA.collisionFilter.group === GROUND_GROUP);
 
-	if (dir.y === 1 && (isGrounded || isBlockedLeft || isBlockedRight)) {
-		Rigidbody.setVelocity(rigidbody, new Vec2(rigidbody.velocity.x, PLAYER_JUMP_FORCE));
+	if (dir.y === 1) {
+		if (isGrounded) {
+			Rigidbody.setVelocity(rigidbody, new Vec2(rigidbody.velocity.x, PLAYER_JUMP_FORCE));
+		} else if (isBlockedLeft) {
+			Rigidbody.setVelocity(
+				rigidbody,
+				new Vec2(rigidbody.velocity.x + PLAYER_WALL_JUMP_FORCE, PLAYER_JUMP_FORCE)
+			);
+		} else if (isBlockedRight) {
+			Rigidbody.setVelocity(
+				rigidbody,
+				new Vec2(rigidbody.velocity.x - PLAYER_WALL_JUMP_FORCE, PLAYER_JUMP_FORCE)
+			);
+		}
 	}
 
 	Rigidbody.setVelocity(
