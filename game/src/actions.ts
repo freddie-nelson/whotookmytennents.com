@@ -10,9 +10,10 @@ export enum ActionType {
   MOVE_PLAYER,
 }
 
-export const PLAYER_MOVE_FORCE = 0.4;
+export const PLAYER_MOVE_FORCE = 0.6;
+export const PLAYER_AIR_MOVE_FORCE = PLAYER_MOVE_FORCE / 2;
 export const PLAYER_WALL_JUMP_FORCE = 0.5;
-export const PLAYER_JUMP_FORCE = 1.5;
+export const PLAYER_JUMP_FORCE = 1.75;
 
 export interface MovePlayerData {
   player: Player;
@@ -66,7 +67,10 @@ export const movePlayerAction: ActionHandler<ActionType, MovePlayerData> = (engi
 
   Rigidbody.setVelocity(
     rigidbody,
-    new Vec2(dir.x !== 0 ? dir.x * PLAYER_MOVE_FORCE : rigidbody.velocity.x, rigidbody.velocity.y)
+    new Vec2(
+      dir.x !== 0 ? dir.x * (isGrounded ? PLAYER_MOVE_FORCE : PLAYER_AIR_MOVE_FORCE) : rigidbody.velocity.x,
+      rigidbody.velocity.y
+    )
   );
 };
 
