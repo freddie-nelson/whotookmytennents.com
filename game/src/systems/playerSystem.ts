@@ -6,7 +6,6 @@ import { RectangleCollider } from "@engine/src/physics/collider";
 import { Rigidbody } from "@engine/src/physics/rigidbody";
 import { GROUND_GROUP } from "@shared/src/groups";
 import { State } from "@state/src/state";
-import { PLAYER_JUMP_FORCE } from "../actions";
 
 export class PlayerSystem extends System {
 	private readonly players: State["players"];

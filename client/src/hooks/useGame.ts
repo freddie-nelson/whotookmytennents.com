@@ -18,6 +18,7 @@ import SpriteSpriteCreator, {
 	SpriteImageType,
 } from "@engine/src/rendering/sprite-creators/sprite-sprite-creator";
 import { SpriteType } from "@shared/src/enums";
+import { MouseSystem } from "@game/src/systems/mouseSystem";
 
 export function useGame(state: State | null, player?: Player, room?: Room<State>) {
 	const [game, setGame] = useState<Game | null>(null);
@@ -71,6 +72,7 @@ export function useGame(state: State | null, player?: Player, room?: Room<State>
 		game.registry.addSystem(renderer);
 		game.registry.addSystem(new MoveSystem(player, room, () => (room ? ColyseusClient.getPing(room.id) : 0)));
 		game.registry.addSystem(new AttackSystem(player, room, () => (room ? ColyseusClient.getPing(room.id) : 0)));
+		game.registry.addSystem(new MouseSystem(player, room, () => (room ? ColyseusClient.getPing(room.id) : 0)));
 
 		// initalise async engine dependencies
 		new Promise<void>(async (resolve) => {

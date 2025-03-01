@@ -9,6 +9,7 @@ export default class Player extends Schema {
 	@type("string") public fistEntity = "";
 	@type("string") public portalGunEntity = "";
 	@type(Vec2) public dir = new Vec2();
+	@type(Vec2) public mouseDir = new Vec2();
 
 	constructor(sessionId: string, name: string, isHost: boolean) {
 		super();

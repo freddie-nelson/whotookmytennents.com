@@ -13,6 +13,7 @@ export enum ActionType {
 	TOGGLE_ATTACK_MODE,
 	PORTAL_ATTACK,
 	COMBAT_ATTACK,
+	MOUSE_DIR,
 }
 
 export const PLAYER_MOVE_FORCE = 0.6;
@@ -154,4 +155,17 @@ export const combatAttackActionValidator: ActionDataValidator<ActionType> = (act
 		typeof data.type === "number" &&
 		typeof data.mouseDir === "object"
 	);
+};
+
+export interface MouseDirData {
+	player: Player;
+	dir: Vec2;
+}
+
+export const mouseDirAction: ActionHandler<ActionType, MouseDirData> = (engine, action, data, dt) => {
+	data.player.mouseDir = data.dir;
+};
+
+export const mouseDirActionValidator: ActionDataValidator<ActionType> = (action, data) => {
+	return data.player && typeof data.player === "object" && typeof data.dir === "object";
 };

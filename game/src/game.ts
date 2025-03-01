@@ -3,6 +3,8 @@ import {
 	ActionType,
 	combatAttackAction,
 	combatAttackActionValidator,
+	mouseDirAction,
+	mouseDirActionValidator,
 	movePlayerAction,
 	movePlayerActionValidator,
 	portalAttackAction,
@@ -18,7 +20,7 @@ import { CircleCollider, RectangleCollider } from "@engine/src/physics/collider"
 import { Renderable } from "@engine/src/rendering/renderable";
 import { Transform } from "@engine/src/core/transform";
 import { ColorTag } from "@engine/src/rendering/colorTag";
-import { GROUND_GROUP } from "@shared/src/groups";
+import { GROUND_GROUP, PLAYER_GROUP } from "@shared/src/groups";
 import { PlayerComponent } from "./components/player";
 import { SpriteTag } from "@engine/src/rendering/spriteTag";
 import { SpriteType } from "@shared/src/enums";
@@ -54,6 +56,7 @@ export default class Game {
 		);
 		this._engine.actions.register(ActionType.PORTAL_ATTACK, portalAttackAction, portalAttackActionValidator);
 		this._engine.actions.register(ActionType.COMBAT_ATTACK, combatAttackAction, combatAttackActionValidator);
+		this._engine.actions.register(ActionType.MOUSE_DIR, mouseDirAction, mouseDirActionValidator);
 
 		this.registry.addSystem(new PlayerSystem(this.options.state.players));
 
@@ -102,33 +105,39 @@ export default class Game {
 		const playerWidth = 1;
 		const playerHeight = 1.7;
 
+		// PLAYER ENTITY
 		const playerEntity = registry.create();
 		registry.add(playerEntity, new Transform(playerPos));
-		registry.add(playerEntity, new Rigidbody());
-		registry.add(playerEntity, new RectangleCollider(playerWidth, playerHeight));
 		registry.add(playerEntity, new Renderable());
 		registry.add(playerEntity, new ColorTag(0xff0000));
 		registry.add(playerEntity, new PlayerComponent());
 		registry.add(playerEntity, new SpriteTag(SpriteType.PLAYER_1));
 
-		const rigidbody = registry.get(playerEntity, Rigidbody);
-		rigidbody.inertia = Infinity;
-		rigidbody.frictionAir = 0.2;
-		rigidbody.friction = 0;
+		const playerCollider = registry.add(playerEntity, new RectangleCollider(playerWidth, playerHeight));
+		playerCollider.group = PLAYER_GROUP;
 
-		// const fistEntity = registry.create();
-		// registry.add(fistEntity, new Transform(Vec2.copy(playerPos)));
-		// registry.add(fistEntity, new Rigidbody());
-		// registry.add(fistEntity, new RectangleCollider(playerWidth * 0.2, playerWidth * 0.2));
-		// registry.add(fistEntity, new Renderable());
-		// registry.add(fistEntity, new ColorTag(0xff00ff));
+		const playerRigidbody = registry.add(playerEntity, new Rigidbody());
+		playerRigidbody.inertia = Infinity;
+		playerRigidbody.frictionAir = 0.2;
+		playerRigidbody.friction = 0;
 
+		// FIST ENTITY
+		const fistEntity = registry.create();
+		registry.add(fistEntity, new Transform(Vec2.copy(playerPos)));
+		registry.add(fistEntity, new Renderable());
+		registry.add(fistEntity, new ColorTag(0xff00ff));
+		registry.add(fistEntity, new Rigidbody());
+
+		const fistCollider = registry.add(fistEntity, new RectangleCollider(playerWidth * 0.2, playerWidth * 0.2));
+		fistCollider.group = PLAYER_GROUP;
+
+		// PORTAL GUN ENTITY
 		const portalGunEntity = registry.create();
 		registry.add(portalGunEntity, new Transform(Vec2.copy(playerPos)));
 		registry.add(portalGunEntity, new Renderable());
 
 		player.entity = playerEntity;
-		// player.fistEntity = fistEntity;
+		player.fistEntity = fistEntity;
 		player.portalGunEntity = portalGunEntity;
 
 		return playerEntity;
