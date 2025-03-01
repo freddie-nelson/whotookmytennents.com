@@ -6,6 +6,8 @@ export default class Player extends Schema {
 	@type("string") public name: string = "";
 	@type("boolean") public isHost: boolean = false;
 	@type("string") public entity = "";
+	@type("string") public fistEntity = "";
+	@type("string") public portalGunEntity = "";
 	@type(Vec2) public dir = new Vec2();
 
 	constructor(sessionId: string, name: string, isHost: boolean) {

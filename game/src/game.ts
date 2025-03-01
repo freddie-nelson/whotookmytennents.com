@@ -20,6 +20,8 @@ import { Transform } from "@engine/src/core/transform";
 import { ColorTag } from "@engine/src/rendering/colorTag";
 import { GROUND_GROUP } from "@shared/src/groups";
 import { PlayerComponent } from "./components/player";
+import { SpriteTag } from "@engine/src/rendering/spriteTag";
+import { SpriteType } from "@shared/src/enums";
 
 export default class Game {
 	private readonly options: EngineOptions;
@@ -96,20 +98,38 @@ export default class Game {
 	public createPlayer(player: Player) {
 		const registry = this.registry;
 
+		const playerPos = new Vec2(0, 0);
+		const playerWidth = 1;
+		const playerHeight = 1.7;
+
 		const playerEntity = registry.create();
-		registry.add(playerEntity, new Transform(new Vec2((Math.random() - 0.5) * 2)));
+		registry.add(playerEntity, new Transform(playerPos));
 		registry.add(playerEntity, new Rigidbody());
-		registry.add(playerEntity, new RectangleCollider(1.5, 1.5));
+		registry.add(playerEntity, new RectangleCollider(playerWidth, playerHeight));
 		registry.add(playerEntity, new Renderable());
 		registry.add(playerEntity, new ColorTag(0xff0000));
 		registry.add(playerEntity, new PlayerComponent());
+		registry.add(playerEntity, new SpriteTag(SpriteType.PLAYER_1));
 
 		const rigidbody = registry.get(playerEntity, Rigidbody);
 		rigidbody.inertia = Infinity;
 		rigidbody.frictionAir = 0.2;
 		rigidbody.friction = 0;
 
+		// const fistEntity = registry.create();
+		// registry.add(fistEntity, new Transform(Vec2.copy(playerPos)));
+		// registry.add(fistEntity, new Rigidbody());
+		// registry.add(fistEntity, new RectangleCollider(playerWidth * 0.2, playerWidth * 0.2));
+		// registry.add(fistEntity, new Renderable());
+		// registry.add(fistEntity, new ColorTag(0xff00ff));
+
+		const portalGunEntity = registry.create();
+		registry.add(portalGunEntity, new Transform(Vec2.copy(playerPos)));
+		registry.add(portalGunEntity, new Renderable());
+
 		player.entity = playerEntity;
+		// player.fistEntity = fistEntity;
+		player.portalGunEntity = portalGunEntity;
 
 		return playerEntity;
 	}
@@ -130,6 +150,7 @@ export default class Game {
 			registry.add(entity, new RectangleCollider(width, height));
 			registry.add(entity, new Renderable());
 			registry.add(entity, new ColorTag(0x0000ff));
+			registry.add(entity, new SpriteTag(SpriteType.GROUND));
 
 			const rigidbody = registry.get(entity, Rigidbody);
 			rigidbody.isStatic = true;
