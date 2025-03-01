@@ -109,6 +109,7 @@ export default class SpriteSpriteCreator implements SpriteCreator {
 		height = spriteTag.overrideHeight || height;
 
 		const container = new Container();
+		container.pivot.set(width / 2, height / 2);
 
 		let s: ContainerChild;
 		switch (image.type) {
@@ -132,8 +133,6 @@ export default class SpriteSpriteCreator implements SpriteCreator {
 					width,
 					height,
 				});
-				s.width = width;
-				s.height = height;
 				(s as TilingSprite).tileScale.set(1 / image.tileWidth!, 1 / image.tileHeight!);
 				break;
 			case SpriteImageType.ANIMATED:
@@ -144,8 +143,6 @@ export default class SpriteSpriteCreator implements SpriteCreator {
 				return container;
 		}
 
-		s.scale.set(1 / app.stage.scale.x, 1 / app.stage.scale.y);
-
 		container.addChild(s);
 		world.addChild(container);
 
@@ -153,7 +150,7 @@ export default class SpriteSpriteCreator implements SpriteCreator {
 		container.position.set(position.x, position.y);
 
 		container.rotation = transform.rotation;
-		container.scale.set(transform.scale.x, transform.scale.y);
+		container.scale.set(transform.scale.x, -transform.scale.y);
 		container.zIndex = transform.zIndex;
 
 		return container;
@@ -170,7 +167,7 @@ export default class SpriteSpriteCreator implements SpriteCreator {
 		s.position.set(position.x, position.y);
 
 		s.rotation = lerp(s.rotation, transform.rotation, CLIENT_LERP_RATE);
-		s.scale.set(transform.scale.x, transform.scale.y);
+		s.scale.set(transform.scale.x, -transform.scale.y);
 		s.zIndex = transform.zIndex;
 	};
 
