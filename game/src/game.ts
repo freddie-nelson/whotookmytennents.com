@@ -133,6 +133,9 @@ export default class Game {
 
 			const rigidbody = registry.get(entity, Rigidbody);
 			rigidbody.isStatic = true;
+			rigidbody.friction = 0;
+			rigidbody.frictionAir = 0;
+			rigidbody.frictionStatic = 0;
 
 			const collider = registry.get(entity, RectangleCollider);
 			collider.group = GROUND_GROUP;
