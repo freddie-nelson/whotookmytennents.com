@@ -137,8 +137,8 @@ export class DefaultRoom extends Room<State, RoomMetadata> {
 			this.game?.createPlayer(p);
 		}
 
-		// create ground
-		this.game?.createGround();
+		// create level
+		this.game?.createLevel();
 	}
 
 	private getPlayer(sessionId: string) {

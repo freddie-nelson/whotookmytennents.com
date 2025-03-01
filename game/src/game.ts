@@ -95,23 +95,29 @@ export default class Game {
 		return playerEntity;
 	}
 
-	public createGround() {
+	public createLevel() {
 		const registry = this.registry;
 
-		const groundEntity = registry.create();
-		registry.add(groundEntity, new Transform(new Vec2(0, -5)));
-		registry.add(groundEntity, new Rigidbody());
-		registry.add(groundEntity, new RectangleCollider(40, 1.5));
-		registry.add(groundEntity, new Renderable());
-		registry.add(groundEntity, new ColorTag(0x00ff00));
+		const map = [
+			{ x: 0, y: -5, width: 40, height: 1.5 }, // floor
+			{ x: -20, y: 0, width: 1.5, height: 20 }, // left wall
+			{ x: 20, y: 0, width: 1.5, height: 20 }, // right wall
+		];
 
-		const rigidbody = registry.get(groundEntity, Rigidbody);
-		rigidbody.isStatic = true;
+		for (const { x, y, width, height } of map) {
+			const entity = registry.create();
+			registry.add(entity, new Transform(new Vec2(x, y)));
+			registry.add(entity, new Rigidbody());
+			registry.add(entity, new RectangleCollider(width, height));
+			registry.add(entity, new Renderable());
+			registry.add(entity, new ColorTag(0x0000ff));
 
-		const collider = registry.get(groundEntity, RectangleCollider);
-		collider.group = GROUND_GROUP;
+			const rigidbody = registry.get(entity, Rigidbody);
+			rigidbody.isStatic = true;
 
-		return groundEntity;
+			const collider = registry.get(entity, RectangleCollider);
+			collider.group = GROUND_GROUP;
+		}
 	}
 
 	// getters
