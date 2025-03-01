@@ -6,6 +6,7 @@ import { RectangleCollider } from "@engine/src/physics/collider";
 import { Rigidbody } from "@engine/src/physics/rigidbody";
 import { GROUND_GROUP } from "@shared/src/groups";
 import { State } from "@state/src/state";
+import { PLAYER_JUMP_FORCE } from "../actions";
 
 export class PlayerSystem extends System {
   private readonly players: State["players"];
@@ -48,15 +49,16 @@ export class PlayerSystem extends System {
 
       if (isGrounded) {
         Rigidbody.setFrictionAir(rigidbody, 0.4);
-      } else if ((isBlockedLeft && Keyboard.isKeyDown("a")) || (isBlockedRight && Keyboard.isKeyDown("d"))) {
-        Rigidbody.setFrictionAir(rigidbody, 0.6);
+      } else if ((isBlockedLeft && p.dir.x === -1) || (isBlockedRight && p.dir.x === 1)) {
+        Rigidbody.setFrictionAir(rigidbody, 0.8);
       } else {
         Rigidbody.setFrictionAir(rigidbody, 0.05);
-        console.log("air");
       }
 
       // const t = registry.get(p.entity, Transform);
       // console.log(id, t.position.x, t.position.y);
+
+      p.dir = new Vec2(0, 0);
     }
   };
 }

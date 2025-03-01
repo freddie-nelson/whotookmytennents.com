@@ -117,7 +117,7 @@ const defaultEngineOptions: Partial<EngineOptions> = {
   positionIterations: 6,
   velocityIterations: 4,
   gravity: new Vec2(0, 0),
-  colliderSlop: 0.05,
+  colliderSlop: 0.02,
 };
 
 /**
