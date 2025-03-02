@@ -1,13 +1,15 @@
 import { ActionDataValidator, ActionHandler } from "@engine/src/core/actions";
 import { Transform } from "@engine/src/core/transform";
 import { Vec2 } from "@engine/src/math/vec";
-import { RectangleCollider } from "@engine/src/physics/collider";
+import { Collider, ColliderEvent, RectangleCollider } from "@engine/src/physics/collider";
 import { Rigidbody } from "@engine/src/physics/rigidbody";
-import { GROUND_GROUP } from "@shared/src/groups";
+import { GROUND_GROUP, PLAYER_GROUP } from "@shared/src/groups";
 import Player from "@state/src/Player";
 import { CombatType, PortalType } from "./systems/attackSystem";
 import { PlayerAttackMode, PlayerComponent } from "./components/player";
 import { SpriteTag } from "@engine/src/rendering/spriteTag";
+import { SpriteType } from "@shared/src/enums";
+import { PortalGroundComponent } from "./components/portalGroundTag";
 
 export enum ActionType {
   MOVE_PLAYER,
@@ -141,7 +143,29 @@ export const portalAttackAction: ActionHandler<ActionType, PortalAttackData> = (
   }
 
   const physics = engine.physics;
-  physics.queryRay();
+  const portalGunTransform = registry.get(player.portalGunEntity, Transform);
+
+  const projectile = registry.create();
+  registry.add(projectile, new Transform(portalGunTransform.position));
+  registry.add(
+    projectile,
+    new SpriteTag(
+      type === PortalType.BLUE ? SpriteType.BLUE_PORTAL_PROJECTILE : SpriteType.ORANGE_PORTAL_PROJECTILE
+    )
+  );
+  registry.add(projectile, new Rigidbody());
+
+  const projectileCollider = registry.add(projectile, new RectangleCollider(0.1, 0.1));
+  projectileCollider.isSensor = true;
+  projectileCollider.group = PLAYER_GROUP;
+
+  Collider.on(projectileCollider, ColliderEvent.COLLISION_START, (pair, a, b) => {
+    if (!registry.has(b.id, PortalGroundComponent)) {
+      return;
+    }
+
+    registry.destroy(projectile);
+  });
 };
 
 export const portalAttackActionValidator: ActionDataValidator<ActionType> = (action, data) => {
