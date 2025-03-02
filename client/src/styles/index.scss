@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.tennentTitle {
+     @apply text-9xl font-bold bg-tyellow text-tred mb-8 px-2 rounded bg-opacity-70
+    }
+
+.buttonStyle {
+    @apply text-tred text-2xl bg-tyellow m-1 hover:bg-tred transition duration-100 hover:text-tyellow transition duration-100 w-1/3
+}

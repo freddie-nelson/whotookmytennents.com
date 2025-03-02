@@ -47,26 +47,23 @@ export function Index() {
   };
 
   return (
-    <main className="w-full h-screen flex flex-col justify-center items-center p-4 bg-[url('static/cosy-pub.jpeg')] bg-no-repeat bg-cover bg-center">
-      <h1 className="text-6xl font-bold bg-tyellow text-tred mb-8 px-2">Who Took Ma Tennents?</h1>
+    <main className="w-full h-screen bg-[url('static/menu.png')] bg-no-repeat bg-cover bg-center flex justify-between">
 
       {isConnecting && <LoadingOverlay text="Connecting" />}
 
-      <div className="flex flex-col gap-4 max-w-md w-full">
-        <div className="flex flex-col">
-          <label className="text-lg font-bold text-tred flex bg-tyellow " htmlFor="name">
-            Username
-          </label>
+      <div className="flex-space-4 flex w-1/2 items-center justify-center flex-col h-screen">
+        <div className="">
           <input
-            className="border border-blue-600 rounded-md p-3 text-lg flex flex-col"
+            className="border border-tred rounded-md p-3 m-2 text-lg flex flex-col"
             name="name"
+            placeholder="Enter a username"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
         </div>
 
         <Button
-          className="bg-blue-600 text-white"
+          className="buttonStyle"
           onClick={() =>
             submit(async () =>
               createRoom({
@@ -79,7 +76,7 @@ export function Index() {
         </Button>
 
         <Button
-          className="bg-blue-600 text-white"
+          className="buttonStyle"
           onClick={() =>
             submit(async () => {
               const id = prompt("Room id: ");
@@ -96,6 +93,14 @@ export function Index() {
           Join Room
         </Button>
       </div>
+
+      <div className="flex w-1/2 items-center justify-center flex-col h-screen">
+        <h1 className="tennentTitle">Who</h1>
+        <h1 className="tennentTitle">Took</h1>
+        <h1 className="tennentTitle">Ma</h1>
+        <h1 className="tennentTitle">Tennents?</h1>
+      </div>
+
     </main>
   );
 }

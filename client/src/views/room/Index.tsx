@@ -34,12 +34,12 @@ export function RoomIndex() {
   const needToStart = Math.max(0, state.roomInfo.playersToStart - state.players.size);
 
   return (
-    <main className="w-full h-screen flex flex-col justify-center items-center p-4">
-      <h1 className="text-6xl font-bold text-blue-600 mb-8">{host?.name}'s Room</h1>
+    <main className="w-full h-screen flex flex-col justify-center items-center p-4 bg-[url('static/tennents-guy.jpeg')] bg-no-repeat bg-cover bg-center">
+      <h1 className="text-6xl font-bold text-tyellow mb-8 bg-tred bg-opacity-60 p-4 rounded">{host?.name}'s Room</h1>
 
       <div className="flex flex-col gap-4 max-w-md w-full">
         {you?.isHost && (
-          <Button className="text-white bg-blue-600" onClick={start}>
+          <Button className="bg-tyellow text-[#b23602] m-1 hover:bg-tred transition duration-100 hover:text-tyellow transition duration-100 " onClick={start}>
             {!state.roomInfo.startable
               ? `Need ${needToStart} more players to start`
               : state.roomInfo.started
@@ -47,27 +47,32 @@ export function RoomIndex() {
               : "Start Game"}
           </Button>
         )}
-        <div className="flex justify-between w-full items-center font-bold text-blue-600">
-          <p>Players</p>
-          <p>
-            {state.players.size} / {state.roomInfo.maxPlayers}
-          </p>
-        </div>
 
-        <div className="flex flex-col gap-4 w-full">
-          {players.map((p) => (
-            <div
-              key={p.sessionId}
-              className="flex justify-between w-full items-center font-bold text-blue-600 bg-blue-100 p-3 rounded-md"
-            >
-              <p>{p.name}</p>
-              <div className="flex gap-2">
-                {p.isHost && <p>Host</p>}
-                {p.sessionId === room.sessionId && <p>You</p>}
+        <div className="bg-tred bg-opacity-60 p-4 rounded">
+    
+          <div className="flex justify-between w-full items-center font-bold text-tyellow">
+            <p>Players</p>
+            <p>
+              {state.players.size} / {state.roomInfo.maxPlayers}
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-4 w-full">
+            {players.map((p) => (
+              <div
+                key={p.sessionId}
+                className="flex justify-between w-full items-center font-bold text-tyellow  p-3 rounded-md"
+              >
+                <p>{p.name}</p>
+                <div className="flex gap-2">
+                  {p.isHost && <p>Host</p>}
+                  {p.sessionId === room.sessionId && <p>You</p>}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+          
+          </div>        
       </div>
     </main>
   );
