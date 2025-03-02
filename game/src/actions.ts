@@ -146,14 +146,16 @@ export const portalAttackAction: ActionHandler<ActionType, PortalAttackData> = (
   const portalGunTransform = registry.get(player.portalGunEntity, Transform);
 
   const projectile = registry.create();
-  registry.add(projectile, new Transform(portalGunTransform.position));
+  registry.add(projectile, new Transform(Vec2.copy(portalGunTransform.position)));
   registry.add(
     projectile,
     new SpriteTag(
       type === PortalType.BLUE ? SpriteType.BLUE_PORTAL_PROJECTILE : SpriteType.ORANGE_PORTAL_PROJECTILE
     )
   );
-  registry.add(projectile, new Rigidbody());
+
+  const projectileRigidbody = registry.add(projectile, new Rigidbody());
+  projectileRigidbody.velocity = Vec2.mul(mouseDir, 2);
 
   const projectileCollider = registry.add(projectile, new RectangleCollider(0.1, 0.1));
   projectileCollider.isSensor = true;
@@ -164,7 +166,8 @@ export const portalAttackAction: ActionHandler<ActionType, PortalAttackData> = (
       return;
     }
 
-    registry.destroy(projectile);
+    console.log("projectile", projectile);
+    // registry.destroy(projectile);
   });
 };
 
