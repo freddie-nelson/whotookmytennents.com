@@ -77,6 +77,7 @@ export class PlayerSystem extends System {
       p.dir = new Vec2(0, 0);
 
       transform.scale.x = Math.sign(p.mouseDir.x) || 1;
+      transform.rotation = 0;
 
       const angle = Vec2.angle(p.mouseDir);
 

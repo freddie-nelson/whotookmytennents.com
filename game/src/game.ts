@@ -25,6 +25,7 @@ import { PlayerComponent } from "./components/player";
 import { SpriteTag } from "@engine/src/rendering/spriteTag";
 import { SpriteType } from "@shared/src/enums";
 import { PortalGroundComponent } from "./components/portalGroundTag";
+import { ProjectileSystem } from "./systems/projectileSystem";
 
 export default class Game {
   private readonly options: EngineOptions;
@@ -60,6 +61,7 @@ export default class Game {
     this._engine.actions.register(ActionType.MOUSE_DIR, mouseDirAction, mouseDirActionValidator);
 
     this.registry.addSystem(new PlayerSystem(this.options.state.players));
+    this.registry.addSystem(new ProjectileSystem());
 
     // start engine
     this._engine.start();

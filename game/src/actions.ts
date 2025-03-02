@@ -10,6 +10,9 @@ import { PlayerAttackMode, PlayerComponent } from "./components/player";
 import { SpriteTag } from "@engine/src/rendering/spriteTag";
 import { SpriteType } from "@shared/src/enums";
 import { PortalGroundComponent } from "./components/portalGroundTag";
+import { EngineType } from "@engine/src/engine";
+import { Renderable } from "@engine/src/rendering/renderable";
+import { ProjectileComponent } from "./components/projectile";
 
 export enum ActionType {
   MOVE_PLAYER,
@@ -135,6 +138,10 @@ export interface PortalAttackData {
 }
 
 export const portalAttackAction: ActionHandler<ActionType, PortalAttackData> = (engine, action, data, dt) => {
+  if (engine.type === EngineType.CLIENT) {
+    return;
+  }
+
   const { player, type, mouseDir } = data;
 
   const registry = engine.registry;
@@ -146,18 +153,18 @@ export const portalAttackAction: ActionHandler<ActionType, PortalAttackData> = (
   const portalGunTransform = registry.get(player.portalGunEntity, Transform);
 
   const projectile = registry.create();
-  registry.add(projectile, new Transform(Vec2.copy(portalGunTransform.position)));
+  registry.add(projectile, new Transform(Vec2.copy(portalGunTransform.position), Vec2.angle(mouseDir)));
+  registry.add(projectile, new Renderable());
   registry.add(
     projectile,
     new SpriteTag(
       type === PortalType.BLUE ? SpriteType.BLUE_PORTAL_PROJECTILE : SpriteType.ORANGE_PORTAL_PROJECTILE
     )
   );
+  registry.add(projectile, new ProjectileComponent(Vec2.mul(mouseDir, PLAYER_MOVE_FORCE * 2)));
+  registry.add(projectile, new Rigidbody());
 
-  const projectileRigidbody = registry.add(projectile, new Rigidbody());
-  projectileRigidbody.velocity = Vec2.mul(mouseDir, 2);
-
-  const projectileCollider = registry.add(projectile, new RectangleCollider(0.1, 0.1));
+  const projectileCollider = registry.add(projectile, new RectangleCollider(0.9, 0.6));
   projectileCollider.isSensor = true;
   projectileCollider.group = PLAYER_GROUP;
 
@@ -166,8 +173,7 @@ export const portalAttackAction: ActionHandler<ActionType, PortalAttackData> = (
       return;
     }
 
-    console.log("projectile", projectile);
-    // registry.destroy(projectile);
+    registry.destroy(projectile);
   });
 };
 
