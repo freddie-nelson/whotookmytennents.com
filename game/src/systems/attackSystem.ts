@@ -10,8 +10,8 @@ import { Mouse, MouseButton } from "@engine/src/input/mouse";
 import { PlayerAttackMode, PlayerComponent } from "../components/player";
 
 export enum PortalType {
-  ORANGE,
-  BLUE,
+  ORANGE = 0,
+  BLUE = 1,
 }
 
 export enum CombatType {
@@ -38,9 +38,8 @@ export class AttackSystem extends System {
     }
 
     const player = registry.get(this.player.entity, PlayerComponent);
-    const qClicked = Keyboard.isKeyPressedThisUpdate("q");
 
-    if (qClicked) {
+    if (Keyboard.isKeyPressedThisUpdate("q")) {
       const newAttackMode =
         player.attackMode === PlayerAttackMode.PORTAL_MODE
           ? PlayerAttackMode.COMBAT_MODE

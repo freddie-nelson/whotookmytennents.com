@@ -7,44 +7,44 @@ import { Room } from "colyseus.js";
 import { State } from "@state/src/state";
 
 export function Index() {
-  const navigate = useNavigate();
+	const navigate = useNavigate();
 
-  const isRoomConnected = useIsRoomConnected();
-  const createRoom = useGameStore((state) => state.createRoom);
-  const joinRoomById = useGameStore((state) => state.joinRoomById);
+	const isRoomConnected = useIsRoomConnected();
+	const createRoom = useGameStore((state) => state.createRoom);
+	const joinRoomById = useGameStore((state) => state.joinRoomById);
 
-  const [name, setName] = useState("");
-  const [isConnecting, setIsConnecting] = useState(false);
+	const [name, setName] = useState("");
+	const [isConnecting, setIsConnecting] = useState(false);
 
-  const submit = async (cb: () => Promise<Room<State> | null>) => {
-    if (isConnecting || isRoomConnected) {
-      alert("You are already connected to a room.");
-      return;
-    }
+	const submit = async (cb: () => Promise<Room<State> | null>) => {
+		if (isConnecting || isRoomConnected) {
+			alert("You are already connected to a room.");
+			return;
+		}
 
-    if (!name) {
-      alert("Please enter a name.");
-      return;
-    }
+		if (!name) {
+			alert("Please enter a name.");
+			return;
+		}
 
-    setIsConnecting(true);
+		setIsConnecting(true);
 
-    try {
-      const r = await cb();
-      if (!r) {
-        setIsConnecting(false);
-        alert("Failed to connect to room.");
-        return;
-      }
+		try {
+			const r = await cb();
+			if (!r) {
+				setIsConnecting(false);
+				alert("Failed to connect to room.");
+				return;
+			}
 
-      navigate(`/room/${r.id}`);
-    } catch (error) {
-      console.error(error);
-      alert(`Failed to connect to room. Error: ${(error as Error).message}`);
-    }
+			navigate(`/room/${r.id}`);
+		} catch (error) {
+			console.error(error);
+			alert(`Failed to connect to room. Error: ${(error as Error).message}`);
+		}
 
-    setIsConnecting(false);
-  };
+		setIsConnecting(false);
+	};
 
   return (
     <main className="w-full h-screen bg-[url('static/menu.png')] bg-no-repeat bg-cover bg-center flex justify-between">

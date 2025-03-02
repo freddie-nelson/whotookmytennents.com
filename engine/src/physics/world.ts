@@ -9,6 +9,7 @@ import Matter from "matter-js";
 import { Constraint } from "./constraint";
 import { Logger } from "@shared/src/Logger";
 import { Registry } from "../ecs/registry";
+import raycast, { RayCol } from "./raycast";
 
 export interface PhysicsWorldOptions {
   gravity: Vec2;
@@ -40,6 +41,7 @@ export class PhysicsWorld extends System {
   private readonly matterBodies: Map<TypedBody, string> = new Map();
   private readonly constraints: Map<string, Matter.Constraint> = new Map();
   private readonly options: PhysicsWorldOptions;
+  private readonly collisionEvents: Map<ColliderEvent, Matter.Pair[]> = new Map();
 
   private lastRegistry?: Registry;
 
@@ -195,6 +197,8 @@ export class PhysicsWorld extends System {
       transform.position.y = body.position.y;
       transform.rotation = body.angle;
     }
+
+    this.flushMatterCollisionEvents();
   };
 
   /**
@@ -224,7 +228,7 @@ export class PhysicsWorld extends System {
    *
    * @returns The bodies that intersect with the ray.
    */
-  public queryRay(start: Vec2, end: Vec2): Matter.Collision[];
+  public queryRay(start: Vec2, end: Vec2): RayCol[];
 
   /**
    * Queries the world for bodies that intersect with a ray.
@@ -235,13 +239,13 @@ export class PhysicsWorld extends System {
    *
    * @returns The bodies that intersect with the ray.
    */
-  public queryRay(origin: Vec2, dir: Vec2, len: number): Matter.Collision[];
+  public queryRay(origin: Vec2, dir: Vec2, len: number): RayCol[];
 
   public queryRay(origin: Vec2, dir: Vec2, len?: number) {
     if (typeof len === "number") {
       return this.queryRay(origin, Vec2.add(origin, Vec2.mul(dir, len)));
     } else {
-      return Matter.Query.ray(this.engine.world.bodies, origin, dir);
+      return raycast(Array.from(this.bodies.values()), origin, dir);
     }
   }
 
@@ -357,16 +361,31 @@ export class PhysicsWorld extends System {
 
   private setupMatterEvents() {
     Matter.Events.on(this.engine, "collisionStart", (event) =>
-      this.onMatterCollisionEvent(ColliderEvent.COLLISION_START, event.pairs)
+      this.queueMatterCollisionEvent(ColliderEvent.COLLISION_START, event.pairs)
     );
 
     Matter.Events.on(this.engine, "collisionEnd", (event) =>
-      this.onMatterCollisionEvent(ColliderEvent.COLLISION_END, event.pairs)
+      this.queueMatterCollisionEvent(ColliderEvent.COLLISION_END, event.pairs)
     );
 
     Matter.Events.on(this.engine, "collisionActive", (event) =>
-      this.onMatterCollisionEvent(ColliderEvent.COLLISION_ACTIVE, event.pairs)
+      this.queueMatterCollisionEvent(ColliderEvent.COLLISION_ACTIVE, event.pairs)
     );
+  }
+
+  private queueMatterCollisionEvent(type: ColliderEvent, pairs: Matter.Pair[]) {
+    const existing = this.collisionEvents.get(type) || [];
+    existing.push(...pairs);
+
+    this.collisionEvents.set(type, existing);
+  }
+
+  private flushMatterCollisionEvents() {
+    for (const [type, pairs] of this.collisionEvents) {
+      this.onMatterCollisionEvent(type, pairs);
+    }
+
+    this.collisionEvents.clear();
   }
 
   private onMatterCollisionEvent(type: ColliderEvent, pairs: Matter.Pair[]) {
@@ -381,7 +400,7 @@ export class PhysicsWorld extends System {
 
       const entityA = (pair.bodyA as TypedBody).plugin!.entity;
       const entityB = (pair.bodyB as TypedBody).plugin!.entity;
-      if (!entityA || !entityB) {
+      if (!entityA || !entityB || !this.lastRegistry.has(entityA) || !this.lastRegistry.has(entityB)) {
         continue;
       }
 

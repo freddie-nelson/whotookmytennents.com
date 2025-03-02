@@ -1,0 +1,7 @@
+[
+	{ "type": "ground", "x": -0.4, "y": 7.94, "angle": 0, "width": 32.12, "height": 1 },
+	{ "type": "spawn", "x": 9.14, "y": 2.02, "angle": 0, "width": 1, "height": 1 },
+	{ "type": "spike", "x": -6, "y": 6.92, "angle": 0, "width": 1, "height": 1 },
+	{ "type": "spawn", "x": 3.98, "y": 2.04, "angle": 0, "width": 1, "height": 1 },
+	{ "type": "goal", "x": -1.5, "y": 6.94, "angle": 0, "width": 1, "height": 1 }
+]

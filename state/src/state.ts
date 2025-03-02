@@ -5,8 +5,8 @@ import RoomInfo from "./RoomInfo";
 import Player from "./Player";
 
 export class State extends Schema {
-  @type(RoomInfo) public roomInfo: RoomInfo = new RoomInfo();
-  @type({ map: Player }) public players: MapSchema<Player> = new MapSchema<Player>();
+	@type(RoomInfo) public roomInfo: RoomInfo = new RoomInfo();
+	@type({ map: Player }) public players: MapSchema<Player> = new MapSchema<Player>();
 
-  @type({ map: Entity }) public entities: EntityMap = new MapSchema<Entity>();
+	@type({ map: Entity }) public entities: EntityMap = new MapSchema<Entity>();
 }

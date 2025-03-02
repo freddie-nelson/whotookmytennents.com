@@ -6,32 +6,32 @@ import { ClientToRoomMessage } from "@shared/src/room";
 import { Navigate, useParams } from "react-router-dom";
 
 export function RoomIndex() {
-  const { id } = useParams();
+	const { id } = useParams();
 
-  const room = useGameStore((state) => state.room)!;
-  const leaveGame = useGameStore((state) => state.leaveGame);
+	const room = useGameStore((state) => state.room)!;
+	const leaveGame = useGameStore((state) => state.leaveGame);
 
-  const state = useRoomState()!;
+	const state = useRoomState()!;
 
-  const guard = useRoomGuard(id, room, state, leaveGame);
-  if (guard) {
-    return guard;
-  }
+	const guard = useRoomGuard(id, room, state, leaveGame);
+	if (guard) {
+		return guard;
+	}
 
-  if (state.roomInfo.started) {
-    return <Navigate to={`/game/${id}`} />;
-  }
+	if (state.roomInfo.started) {
+		return <Navigate to={`/game/${id}`} />;
+	}
 
-  const start = () => {
-    if (!state.roomInfo.startable) return;
+	const start = () => {
+		if (!state.roomInfo.startable) return;
 
-    room.send(ClientToRoomMessage.START_GAME);
-  };
+		room.send(ClientToRoomMessage.START_GAME);
+	};
 
-  const players = Array.from(state.players.values());
-  const host = players.find((p) => p.isHost);
-  const you = state.players.get(room.sessionId);
-  const needToStart = Math.max(0, state.roomInfo.playersToStart - state.players.size);
+	const players = Array.from(state.players.values());
+	const host = players.find((p) => p.isHost);
+	const you = state.players.get(room.sessionId);
+	const needToStart = Math.max(0, state.roomInfo.playersToStart - state.players.size);
 
   return (
     <main className="w-full h-screen flex flex-col justify-center items-center p-4 bg-[url('static/tennents-guy.jpeg')] bg-no-repeat bg-cover bg-center">
