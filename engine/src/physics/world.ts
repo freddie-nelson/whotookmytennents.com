@@ -9,6 +9,7 @@ import Matter from "matter-js";
 import { Constraint } from "./constraint";
 import { Logger } from "@shared/src/Logger";
 import { Registry } from "../ecs/registry";
+import raycast, { RayCol } from "./raycast";
 
 export interface PhysicsWorldOptions {
   gravity: Vec2;
@@ -224,7 +225,7 @@ export class PhysicsWorld extends System {
    *
    * @returns The bodies that intersect with the ray.
    */
-  public queryRay(start: Vec2, end: Vec2): Matter.Collision[];
+  public queryRay(start: Vec2, end: Vec2): RayCol[];
 
   /**
    * Queries the world for bodies that intersect with a ray.
@@ -235,13 +236,13 @@ export class PhysicsWorld extends System {
    *
    * @returns The bodies that intersect with the ray.
    */
-  public queryRay(origin: Vec2, dir: Vec2, len: number): Matter.Collision[];
+  public queryRay(origin: Vec2, dir: Vec2, len: number): RayCol[];
 
-  public queryRay(origin: Vec2, dir: Vec2, len?: number) {
+  public queryRay(origin: Vec2, dir: Vec2, len?: number): RayCol[] {
     if (typeof len === "number") {
       return this.queryRay(origin, Vec2.add(origin, Vec2.mul(dir, len)));
     } else {
-      return Matter.Query.ray(this.engine.world.bodies, origin, dir);
+      return raycast(this.engine.world.bodies, origin, dir);
     }
   }
 
