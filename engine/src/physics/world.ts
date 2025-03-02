@@ -360,17 +360,20 @@ export class PhysicsWorld extends System {
   }
 
   private setupMatterEvents() {
-    Matter.Events.on(this.engine, "collisionStart", (event) =>
-      this.queueMatterCollisionEvent(ColliderEvent.COLLISION_START, event.pairs)
-    );
+    Matter.Events.on(this.engine, "collisionStart", (event) => {
+      this.onMatterCollisionEvent(ColliderEvent.COLLISION_START_INSTANT, event.pairs);
+      this.queueMatterCollisionEvent(ColliderEvent.COLLISION_START, event.pairs);
+    });
 
-    Matter.Events.on(this.engine, "collisionEnd", (event) =>
-      this.queueMatterCollisionEvent(ColliderEvent.COLLISION_END, event.pairs)
-    );
+    Matter.Events.on(this.engine, "collisionEnd", (event) => {
+      this.onMatterCollisionEvent(ColliderEvent.COLLISION_END_INSTANT, event.pairs);
+      this.queueMatterCollisionEvent(ColliderEvent.COLLISION_END, event.pairs);
+    });
 
-    Matter.Events.on(this.engine, "collisionActive", (event) =>
-      this.queueMatterCollisionEvent(ColliderEvent.COLLISION_ACTIVE, event.pairs)
-    );
+    Matter.Events.on(this.engine, "collisionActive", (event) => {
+      this.onMatterCollisionEvent(ColliderEvent.COLLISION_ACTIVE_INSTANT, event.pairs);
+      this.queueMatterCollisionEvent(ColliderEvent.COLLISION_ACTIVE, event.pairs);
+    });
   }
 
   private queueMatterCollisionEvent(type: ColliderEvent, pairs: Matter.Pair[]) {
