@@ -165,7 +165,7 @@ export default class Game {
   }
 
   public createLevel() {
-    const level = levels[0];
+    const level = levels[1];
 
     for (const { type, data } of level) {
       switch (type) {
