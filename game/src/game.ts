@@ -20,7 +20,7 @@ import { CircleCollider, ColliderEvent, RectangleCollider } from "@engine/src/ph
 import { Renderable } from "@engine/src/rendering/renderable";
 import { Transform } from "@engine/src/core/transform";
 import { ColorTag } from "@engine/src/rendering/colorTag";
-import { GROUND_GROUP, PLAYER_GROUP, SPIKE_GROUP } from "@shared/src/groups";
+import { GOAL_GROUP, GROUND_GROUP, PLAYER_GROUP, SPIKE_GROUP } from "@shared/src/groups";
 import { PlayerComponent } from "./components/player";
 import { SpriteTag } from "@engine/src/rendering/spriteTag";
 import { SpriteType } from "@shared/src/enums";
@@ -28,6 +28,7 @@ import { PortalGroundComponent } from "./components/portalGroundTag";
 import { ProjectileSystem } from "./systems/projectileSystem";
 import { levels } from "./maps";
 import { Logger } from "@shared/src/Logger";
+import { GoalComponent } from "./components/goalTag";
 
 export default class Game {
   private readonly options: EngineOptions;
@@ -165,8 +166,9 @@ export default class Game {
   }
 
   public createLevel() {
-    const level = levels[2];
+    const level = levels[0];
     const spawns = [];
+    const goals = [];
 
     for (const { type, x, y, width, height } of level) {
       switch (type) {
@@ -183,16 +185,23 @@ export default class Game {
           spawns.push(new Vec2(x, -y));
           break;
 
+        case "goal":
+          this.createGoal(x, -y, width, height);
+          goals.push(new Vec2(x, -y));
+          break;
+
         default:
           Logger.errorAndThrow("GAME", `Unknown level object type: ${type}`);
       }
     }
 
-    if (spawns.length === 0) {
-      Logger.errorAndThrow("GAME", "No spawn points found in level");
+    if (spawns.length !== 2) {
+      Logger.errorAndThrow("GAME", "Two spawns are required for a level.");
+    } else if (goals.length !== 1) {
+      Logger.errorAndThrow("GAME", "One goal is required for a level.");
     }
 
-    return spawns;
+    return [spawns[0], spawns[1], goals[0]];
   }
 
   private createGround(x: number, y: number, width: number, height: number) {
@@ -245,6 +254,46 @@ export default class Game {
     this.registry.add(entity, new Renderable());
     this.registry.add(entity, new ColorTag(0x00ff00));
     this.registry.add(entity, new SpriteTag(SpriteType.NONE, width, height));
+  }
+
+  private createGoal(x: number, y: number, width: number, height: number) {
+    const entity = this.registry.create();
+    this.registry.add(entity, new Transform(new Vec2(x, y)));
+    this.registry.add(entity, new Renderable());
+    this.registry.add(entity, new ColorTag(0x00ff00));
+    this.registry.add(entity, new SpriteTag(SpriteType.GOAL, width, height));
+
+    const rigidbody = this.registry.add(entity, new Rigidbody());
+    rigidbody.isStatic = true;
+    rigidbody.friction = 0;
+    rigidbody.frictionAir = 0;
+    rigidbody.frictionStatic = 0;
+
+    const goal = this.registry.add(entity, new GoalComponent());
+
+    const collider = this.registry.add(entity, new RectangleCollider(width, height));
+    collider.group = GOAL_GROUP;
+
+    RectangleCollider.on(collider, ColliderEvent.COLLISION_START, (pair, a, b) => {
+      if (!this.registry.has(b.id, PlayerComponent)) {
+        return;
+      }
+
+      const playerPlayerComponent = this.registry.get(b.id, PlayerComponent);
+
+      switch (playerPlayerComponent.playerNumber) {
+        case 0:
+          goal.player1Collided = true;
+          break;
+        case 1:
+          goal.player2Collided = true;
+          break;
+      }
+
+      if (goal.player1Collided && goal.player2Collided) {
+        console.log("Both players reached the goal!");
+      }
+    });
   }
 
   // getters

@@ -12,5 +12,6 @@
   { "type": "ground", "x": 2.63, "y": -1.4, "angle": 0, "width": 2.06, "height": 1 },
   { "type": "ground", "x": 4.8, "y": -2.94, "angle": 0, "width": 2.4, "height": 1 },
   { "type": "goal", "x": 7.16, "y": 0.14, "angle": 0, "width": 1, "height": 1 },
-  { "type": "spawn", "x": -8.2, "y": 0.04, "angle": 0, "width": 1, "height": 1 }
+  { "type": "spawn", "x": -8.759999999999998, "y": 0.14, "angle": 0, "width": 1, "height": 1 },
+  { "type": "spawn", "x": -7.3, "y": 0.18, "angle": 0, "width": 1, "height": 1 }
 ]
