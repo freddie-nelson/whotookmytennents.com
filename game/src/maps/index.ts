@@ -6,13 +6,12 @@ import level4JSON from "./level4.json";
 import level5JSON from "./level5.json";
 import level6JSON from "./level6.json";
 
-
 export const levels = [
   level0JSON,
   level1JSON,
   level2JSON,
   level3JSON,
   level4JSON,
-  level5JSON
+  level5JSON,
   // Add more levels here
 ];

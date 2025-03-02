@@ -4,7 +4,7 @@ import { Vec2 } from "@engine/src/math/vec";
 import { Collider, ColliderEvent, RectangleCollider } from "@engine/src/physics/collider";
 import { Rigidbody } from "@engine/src/physics/rigidbody";
 import { GROUND_GROUP, PLAYER_GROUP, PROJECTILE_GROUP } from "@shared/src/groups";
-import Player from "@state/src/Player";
+import Player, { PortalSchema } from "@state/src/Player";
 import { CombatType, PortalType } from "./systems/attackSystem";
 import { PlayerAttackMode, PlayerComponent } from "./components/player";
 import { SpriteTag } from "@engine/src/rendering/spriteTag";
@@ -169,7 +169,7 @@ export const portalAttackAction: ActionHandler<ActionType, PortalAttackData> = (
   projectileCollider.isSensor = true;
   projectileCollider.group = PROJECTILE_GROUP;
 
-  Collider.on(projectileCollider, ColliderEvent.COLLISION_START, (pair, a, b) => {
+  Collider.on(projectileCollider, ColliderEvent.COLLISION_START_INSTANT, (pair, a, b) => {
     if (!registry.has(b.id, PortalGroundComponent)) {
       return;
     }
@@ -183,9 +183,10 @@ export const portalAttackAction: ActionHandler<ActionType, PortalAttackData> = (
       return;
     }
 
-    const existingPortalEntity = player.portalEntities[type];
-    if (existingPortalEntity) {
-      registry.destroy(existingPortalEntity);
+    const existingPortal = player.portals.get(type.toString());
+    if (existingPortal !== undefined) {
+      player.portals.delete(type.toString());
+      registry.destroy(existingPortal.entity);
     }
 
     const hit = hits[0];
@@ -207,7 +208,44 @@ export const portalAttackAction: ActionHandler<ActionType, PortalAttackData> = (
       new SpriteTag(type === PortalType.BLUE ? SpriteType.BLUE_PORTAL : SpriteType.ORANGE_PORTAL)
     );
 
-    player.portalEntities[type] = portal;
+    player.portals.set(type.toString(), new PortalSchema(portal, Vec2.copy(hit.normal)));
+
+    Collider.on(portalCollider, ColliderEvent.COLLISION_ACTIVE, (pair, a, b) => {
+      if (!registry.has(b.id, PlayerComponent)) {
+        return;
+      }
+
+      const playerComponent = registry.get(b.id, PlayerComponent);
+      // if (Date.now() - playerComponent.portalLastUsed < 200) {
+      //   return;
+      // }
+
+      const playerTransform = registry.get(b.id, Transform);
+      const playerRigidbody = registry.get(b.id, Rigidbody);
+      const playerCollider = registry.get(b.id, RectangleCollider);
+
+      playerComponent.portalLastUsed = Date.now();
+
+      const otherPortal =
+        type === PortalType.BLUE
+          ? player.portals.get(PortalType.ORANGE.toString())
+          : player.portals.get(PortalType.BLUE.toString());
+      if (!otherPortal) {
+        return;
+      }
+
+      const otherPortalTransform = registry.get(otherPortal.entity, Transform);
+      const otherPortalCollider = registry.get(otherPortal.entity, RectangleCollider);
+
+      Vec2.set(playerTransform.position, otherPortalTransform.position.x, otherPortalTransform.position.y);
+      Vec2.add(
+        playerTransform.position,
+        Vec2.mul(otherPortal.normal, Math.max(playerCollider.width, playerCollider.height) * 1.1)
+      );
+
+      const velMag = Vec2.len(playerRigidbody.velocity);
+      Rigidbody.setVelocity(playerRigidbody, Vec2.mul(otherPortal.normal, velMag));
+    });
   });
 };
 
