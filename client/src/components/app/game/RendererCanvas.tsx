@@ -7,7 +7,7 @@ export interface RendererCanvasProps extends HTMLAttributes<HTMLDivElement> {
   renderer: Renderer;
 }
 
-export const RendererCanvas = memo(({ game, renderer, ...props }: RendererCanvasProps) => {
+export const RendererCanvas = memo(({ renderer, ...props }: RendererCanvasProps) => {
   const container = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

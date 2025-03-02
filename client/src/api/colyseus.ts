@@ -28,7 +28,7 @@ export class ColyseusClient {
 
     try {
       return this.join<T>(room, false, options);
-    } catch (error) {
+    } catch {
       return this.joinOrCreate<T>(room, options);
     }
   }
@@ -71,7 +71,7 @@ export class ColyseusClient {
       const availableRooms = rooms.filter((r) => r.metadata?.joinable);
 
       return availableRooms.some((r) => r.roomId === id);
-    } catch (error) {
+    } catch {
       return false;
     }
   }
