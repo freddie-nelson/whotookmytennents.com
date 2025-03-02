@@ -9,7 +9,7 @@ import { ActionType, MouseDirData, MovePlayerData } from "../actions";
 import { Mouse } from "@engine/src/input/mouse";
 
 export class MouseSystem extends System {
-	private static readonly TIMEOUT_TIME = 0.25;
+	private static readonly TIMEOUT_TIME = 0.075;
 
 	private readonly player: Player;
 	private readonly room?: Room<State>;

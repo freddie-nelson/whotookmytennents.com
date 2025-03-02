@@ -7,6 +7,7 @@ import { GROUND_GROUP } from "@shared/src/groups";
 import Player from "@state/src/Player";
 import { CombatType, PortalType } from "./systems/attackSystem";
 import { PlayerAttackMode, PlayerComponent } from "./components/player";
+import { SpriteTag } from "@engine/src/rendering/spriteTag";
 
 export enum ActionType {
 	MOVE_PLAYER,
@@ -103,6 +104,13 @@ export const toggleAttackModeAction: ActionHandler<ActionType, ToggleAttackModeD
 
 	const playerComponent = registry.get(player.entity, PlayerComponent);
 	playerComponent.attackMode = type;
+
+	const portalGunSpriteTag = registry.get(player.portalGunEntity, SpriteTag);
+	if (type === PlayerAttackMode.PORTAL_MODE) {
+		portalGunSpriteTag.opacity = 1;
+	} else {
+		portalGunSpriteTag.opacity = 0;
+	}
 };
 
 export const toggleAttackModeActionValidator: ActionDataValidator<ActionType> = (action, data) => {

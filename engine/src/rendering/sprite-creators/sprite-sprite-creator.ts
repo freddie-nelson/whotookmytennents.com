@@ -33,6 +33,7 @@ export interface SpriteImage {
 	src: string;
 	tileWidth?: number;
 	tileHeight?: number;
+	pixelated?: boolean;
 }
 
 /**
@@ -152,6 +153,7 @@ export default class SpriteSpriteCreator implements SpriteCreator {
 		container.rotation = transform.rotation;
 		container.scale.set(transform.scale.x, -transform.scale.y);
 		container.zIndex = transform.zIndex;
+		container.alpha = spriteTag.opacity;
 
 		return container;
 	};
@@ -160,8 +162,8 @@ export default class SpriteSpriteCreator implements SpriteCreator {
 		const e = registry.get(entity);
 		const s = sprite!;
 
-		const collider = PhysicsWorld.getCollider(e);
 		const transform = Entity.getComponent(e, Transform);
+		const spriteTag = Entity.getComponent(e, SpriteTag);
 
 		const position = Vec2.lerp(new Vec2(s.position.x, s.position.y), transform.position, CLIENT_LERP_RATE);
 		s.position.set(position.x, position.y);
@@ -169,6 +171,7 @@ export default class SpriteSpriteCreator implements SpriteCreator {
 		s.rotation = lerp(s.rotation, transform.rotation, CLIENT_LERP_RATE);
 		s.scale.set(transform.scale.x, -transform.scale.y);
 		s.zIndex = transform.zIndex;
+		s.alpha = spriteTag.opacity;
 	};
 
 	public readonly delete: SpriteCreatorDelete = ({ registry, app, entity, sprite }) => {
@@ -184,6 +187,10 @@ export default class SpriteSpriteCreator implements SpriteCreator {
 	public async preloadTextures() {
 		for (const image of this.spriteImageMap.values()) {
 			const res = await Assets.load(image);
+			if (image.pixelated) {
+				res.source.scaleMode = "nearest";
+			}
+
 			this.textureCache.set(image.src, res);
 		}
 	}

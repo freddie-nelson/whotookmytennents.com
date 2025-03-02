@@ -44,24 +44,39 @@ export function useGame(state: State | null, player?: Player, room?: Room<State>
 			autoInit: false,
 			autoSize: true,
 			backgroundColor: 0xffffff,
+			scale: window.innerWidth * 0.09,
 		});
 
-		const spriteCreator = new PhysicsEntitySpriteCreator(0xff0000, 0.5, 1000);
-		renderer.registerSpriteCreator(spriteCreator);
+		// const spriteCreator = new PhysicsEntitySpriteCreator(0xff0000, 0.5, 1000);
+		// renderer.registerSpriteCreator(spriteCreator);
 
 		const spriteImageMap = new Map<SpriteType, SpriteImage>();
-		spriteImageMap.set(SpriteType.PLAYER_1, { type: SpriteImageType.SINGLE, src: "/assets/images/Rangers0.png" });
-		spriteImageMap.set(SpriteType.PLAYER_2, { type: SpriteImageType.SINGLE, src: "/assets/images/Celtic0.png" });
-		spriteImageMap.set(SpriteType.FIST, { type: SpriteImageType.SINGLE, src: "/assets/images/Fist.png" });
+		spriteImageMap.set(SpriteType.PLAYER_1, {
+			type: SpriteImageType.SINGLE,
+			src: "/assets/images/Rangers0.png",
+			pixelated: true,
+		});
+		spriteImageMap.set(SpriteType.PLAYER_2, {
+			type: SpriteImageType.SINGLE,
+			src: "/assets/images/Celtic0.png",
+			pixelated: true,
+		});
+		spriteImageMap.set(SpriteType.FIST, {
+			type: SpriteImageType.SINGLE,
+			src: "/assets/images/Fist.png",
+			pixelated: true,
+		});
 		spriteImageMap.set(SpriteType.PORTAL_GUN, {
 			type: SpriteImageType.SINGLE,
 			src: "/assets/images/TennentsBlaster.png",
+			pixelated: true,
 		});
 		spriteImageMap.set(SpriteType.GROUND, {
 			type: SpriteImageType.TILE,
 			src: "/assets/images/Tile1.png",
 			tileWidth: 32,
 			tileHeight: 32,
+			pixelated: true,
 		});
 
 		renderer.camera.options.zoom = 0.5;

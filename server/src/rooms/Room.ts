@@ -30,7 +30,7 @@ export class DefaultRoom extends Room<State, RoomMetadata> {
 
 	private game?: Game;
 
-	maxClients = 10;
+	maxClients = 2;
 
 	async onCreate(options: RoomJoinOptions) {
 		console.log("onCreate", options);
@@ -133,8 +133,9 @@ export class DefaultRoom extends Room<State, RoomMetadata> {
 		this.setStarted(true);
 
 		// create players
-		for (const p of this.state.players.values()) {
-			this.game?.createPlayer(p);
+		const players = Array.from(this.state.players.values());
+		for (let i = 0; i < this.state.players.size; i++) {
+			this.game?.createPlayer(players[i], i);
 		}
 
 		// create level

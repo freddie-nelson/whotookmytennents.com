@@ -98,7 +98,7 @@ export default class Game {
 	}
 
 	// game logic
-	public createPlayer(player: Player) {
+	public createPlayer(player: Player, playerCount: number) {
 		const registry = this.registry;
 
 		const playerPos = new Vec2(0, 0);
@@ -111,7 +111,7 @@ export default class Game {
 		registry.add(playerEntity, new Renderable());
 		registry.add(playerEntity, new ColorTag(0xff0000));
 		registry.add(playerEntity, new PlayerComponent());
-		registry.add(playerEntity, new SpriteTag(SpriteType.PLAYER_1));
+		registry.add(playerEntity, new SpriteTag(playerCount === 1 ? SpriteType.PLAYER_1 : SpriteType.PLAYER_2));
 
 		const playerCollider = registry.add(playerEntity, new RectangleCollider(playerWidth, playerHeight));
 		playerCollider.group = PLAYER_GROUP;
@@ -127,14 +127,18 @@ export default class Game {
 		registry.add(fistEntity, new Renderable());
 		registry.add(fistEntity, new ColorTag(0xff00ff));
 		registry.add(fistEntity, new Rigidbody());
+		registry.add(fistEntity, new SpriteTag(SpriteType.FIST));
 
-		const fistCollider = registry.add(fistEntity, new RectangleCollider(playerWidth * 0.2, playerWidth * 0.2));
+		const fistCollider = registry.add(fistEntity, new RectangleCollider(playerWidth * 0.35, playerWidth * 0.35));
 		fistCollider.group = PLAYER_GROUP;
+		fistCollider.isSensor = true;
 
 		// PORTAL GUN ENTITY
 		const portalGunEntity = registry.create();
 		registry.add(portalGunEntity, new Transform(Vec2.copy(playerPos)));
 		registry.add(portalGunEntity, new Renderable());
+		registry.add(portalGunEntity, new ColorTag(0x00ff00));
+		registry.add(portalGunEntity, new SpriteTag(SpriteType.PORTAL_GUN, playerWidth * 0.85, playerWidth * 0.85));
 
 		player.entity = playerEntity;
 		player.fistEntity = fistEntity;

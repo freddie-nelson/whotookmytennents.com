@@ -7,11 +7,13 @@ export class SpriteTag extends Component {
 	@type("number") spriteType: number = -1;
 	@type("number") overrideWidth: number = 0;
 	@type("number") overrideHeight: number = 0;
+	@type("number") opacity: number = 1;
 
-	constructor(spriteType: number = -1, overrideWidth: number = 0, overrideHeight: number = 0) {
+	constructor(spriteType: number = -1, overrideWidth: number = 0, overrideHeight: number = 0, opacity: number = 1) {
 		super(SpriteTag.COMPONENT_ID);
 		this.spriteType = spriteType;
 		this.overrideWidth = overrideWidth;
 		this.overrideHeight = overrideHeight;
+		this.opacity = opacity;
 	}
 }
