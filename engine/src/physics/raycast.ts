@@ -1,15 +1,17 @@
 import Matter from "matter-js";
+import { TypedBody } from "../matter";
+import { Entity } from "../ecs/entity";
 
 /**
  * Performs a raycast and returns an array of raycol objects.
- * @param {Matter.Body[]} bodies - Bodies to check collision with; passed through Matter.Query.ray().
+ * @param {TypedBody[]} bodies - Bodies to check collision with; passed through Matter.Query.ray().
  * @param {vec2} start - Start point of raycast.
  * @param {vec2} end - End point of raycast.
  * @param {boolean} [sort=true] - Whether or not the ray collisions should be sorted based on distance from the origin.
  * @returns {RayCol[]} Array of raycol objects containing collision information.
  */
 export default function raycast(
-  bodies: Matter.Body[],
+  bodies: TypedBody[],
   s: Matter.Vector,
   e: Matter.Vector,
   sort: boolean = true
@@ -23,7 +25,12 @@ export default function raycast(
 
   for (let i = query.length - 1; i >= 0; i--) {
     const bcols = ray.bodyCollisions(raytest, query[i].bodyA);
+
     for (let k = bcols.length - 1; k >= 0; k--) {
+      if (!bcols[k].entity) {
+        continue;
+      }
+
       cols.push(bcols[k]);
     }
   }
@@ -39,23 +46,25 @@ export default function raycast(
  * Data type that contains information about an intersection between a ray and a body.
  */
 export class RayCol {
-  body: Matter.Body;
+  body: TypedBody;
   point: vec2;
   normal: vec2;
   verts: vec2[];
+  entity: string;
 
   /**
    * Initializes a raycol object with the given data.
-   * @param {Matter.Body} body - The body that the ray has collided with.
+   * @param {TypedBody} body - The body that the ray has collided with.
    * @param {vec2} point - The collision point.
    * @param {vec2} normal - The normal of the edge that the ray collides with.
    * @param {vec2[]} verts - The vertices of the edge that the ray collides with.
    */
-  constructor(body: Matter.Body, point: vec2, normal: vec2, verts: vec2[]) {
+  constructor(body: TypedBody, point: vec2, normal: vec2, verts: vec2[]) {
     this.body = body;
     this.point = point;
     this.normal = normal;
     this.verts = verts;
+    this.entity = body.plugin?.entity ?? "";
   }
 }
 
@@ -195,10 +204,10 @@ class ray {
 
   /**
    * Returns all of the edges of a body in the form of an array of ray objects.
-   * @param {Matter.Body} body - The body to get edges from.
+   * @param {TypedBody} body - The body to get edges from.
    * @returns {ray[]} Array of ray objects representing the edges.
    */
-  static bodyEdges(body: Matter.Body): ray[] {
+  static bodyEdges(body: TypedBody): ray[] {
     const r: ray[] = [];
     for (let i = body.parts.length - 1; i >= 0; i--) {
       for (let k = body.parts[i].vertices.length - 1; k >= 0; k--) {
@@ -221,10 +230,10 @@ class ray {
   /**
    * Returns all the collisions between a specified ray and body in the form of an array of raycol objects.
    * @param {ray} rayA - The ray to test for collisions.
-   * @param {Matter.Body} body - The body to test for collisions.
+   * @param {TypedBody} body - The body to test for collisions.
    * @returns {RayCol[]} Array of raycol objects representing the collisions.
    */
-  static bodyCollisions(rayA: ray, body: Matter.Body): RayCol[] {
+  static bodyCollisions(rayA: ray, body: TypedBody): RayCol[] {
     const r: RayCol[] = [];
     const edges = ray.bodyEdges(body);
     for (let i = edges.length - 1; i >= 0; i--) {
