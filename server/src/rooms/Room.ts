@@ -132,15 +132,8 @@ export class DefaultRoom extends Room<State, RoomMetadata> {
 
 		this.setStarted(true);
 
-		// create level
-		const [spawn1, spawn2, goal] = this.game?.createLevel();
-
-		// create players
-		const players = Array.from(this.state.players.values());
-		for (let i = 0; i < this.state.players.size; i++) {
-			const playerSpawn = [spawn1, spawn2][i];
-			this.game?.createPlayer(players[i], i, playerSpawn);
-		}
+		// create level 0
+		this.game?.clearAndLoadLevelAndPlayers(0, Array.from(this.state.players.values()));
 	}
 
 	private getPlayer(sessionId: string) {

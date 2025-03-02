@@ -34,6 +34,8 @@ export default class Game {
 	private readonly options: EngineOptions;
 	private _engine: Engine;
 
+	private _levelsCompleted: number = 0;
+
 	constructor(options: EngineOptions) {
 		const autoStart = options.autoStart;
 		if (autoStart) {
@@ -103,8 +105,62 @@ export default class Game {
 		this._engine = new Engine(this.options);
 	}
 
-	// game logic
-	public createPlayer(player: Player, playerCount: number, spawn: Vec2) {
+	public clearAndLoadLevelAndPlayers(levelIndex: number, players: Player[]) {
+		// clear all entities
+		for (const entity of this.registry.getEntities().keys()) {
+			this.registry.destroy(entity);
+		}
+
+		// create level
+		const [spawn1, spawn2, goal] = this.loadLevel(levelIndex, players);
+
+		// create players
+		for (let i = 0; i < players.length; i++) {
+			const playerSpawn = [spawn1, spawn2][i];
+			this.createPlayer(players[i], i, playerSpawn);
+		}
+	}
+
+	private loadLevel(levelIndex: number, players: Player[]) {
+		const level = levels[levelIndex];
+		const spawns = [];
+		const goals = [];
+
+		for (const { type, x, y, width, height } of level) {
+			switch (type) {
+				case "ground":
+					this.createGround(x, -y, width, height);
+					break;
+
+				case "spike":
+					this.createSpike(x, -y, width, height);
+					break;
+
+				case "spawn":
+					this.createSpawn(x, -y, width, height);
+					spawns.push(new Vec2(x, -y));
+					break;
+
+				case "goal":
+					this.createGoal(x, -y, width, height, players);
+					goals.push(new Vec2(x, -y));
+					break;
+
+				default:
+					Logger.errorAndThrow("GAME", `Unknown level object type: ${type}`);
+			}
+		}
+
+		if (spawns.length !== 2) {
+			Logger.errorAndThrow("GAME", "Two spawns are required for a level.");
+		} else if (goals.length !== 1) {
+			Logger.errorAndThrow("GAME", "One goal is required for a level.");
+		}
+
+		return [spawns[0], spawns[1], goals[0]];
+	}
+
+	private createPlayer(player: Player, playerCount: number, spawn: Vec2) {
 		const registry = this.registry;
 
 		const playerPos = Vec2.copy(spawn);
@@ -159,45 +215,6 @@ export default class Game {
 		return playerEntity;
 	}
 
-	public createLevel() {
-		const level = levels[0];
-		const spawns = [];
-		const goals = [];
-
-		for (const { type, x, y, width, height } of level) {
-			switch (type) {
-				case "ground":
-					this.createGround(x, -y, width, height);
-					break;
-
-				case "spike":
-					this.createSpike(x, -y, width, height);
-					break;
-
-				case "spawn":
-					this.createSpawn(x, -y, width, height);
-					spawns.push(new Vec2(x, -y));
-					break;
-
-				case "goal":
-					this.createGoal(x, -y, width, height);
-					goals.push(new Vec2(x, -y));
-					break;
-
-				default:
-					Logger.errorAndThrow("GAME", `Unknown level object type: ${type}`);
-			}
-		}
-
-		if (spawns.length !== 2) {
-			Logger.errorAndThrow("GAME", "Two spawns are required for a level.");
-		} else if (goals.length !== 1) {
-			Logger.errorAndThrow("GAME", "One goal is required for a level.");
-		}
-
-		return [spawns[0], spawns[1], goals[0]];
-	}
-
 	private createGround(x: number, y: number, width: number, height: number) {
 		const entity = this.registry.create();
 		this.registry.add(entity, new Transform(new Vec2(x, y)));
@@ -250,7 +267,7 @@ export default class Game {
 		this.registry.add(entity, new SpriteTag(SpriteType.NONE, width, height));
 	}
 
-	private createGoal(x: number, y: number, width: number, height: number) {
+	private createGoal(x: number, y: number, width: number, height: number, players: Player[]) {
 		const entity = this.registry.create();
 		this.registry.add(entity, new Transform(new Vec2(x, y)));
 		this.registry.add(entity, new Renderable());
@@ -285,7 +302,9 @@ export default class Game {
 			}
 
 			if (goal.player1Collided && goal.player2Collided) {
+				this._levelsCompleted++;
 				console.log("Both players reached the goal!");
+				this.clearAndLoadLevelAndPlayers(this._levelsCompleted, players);
 			}
 		});
 	}
