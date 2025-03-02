@@ -29,12 +29,13 @@ import { ProjectileSystem } from "./systems/projectileSystem";
 import { levels } from "./maps";
 import { Logger } from "@shared/src/Logger";
 import { GoalComponent } from "./components/goalTag";
+import { PortalType } from "./systems/attackSystem";
 
 export default class Game {
 	private readonly options: EngineOptions;
 	private _engine: Engine;
 
-	private _levelsCompleted: number = 0;
+	private _levelsCompleted: number = 1;
 
 	constructor(options: EngineOptions) {
 		const autoStart = options.autoStart;
@@ -211,6 +212,9 @@ export default class Game {
 		player.entity = playerEntity;
 		player.fistEntity = fistEntity;
 		player.portalGunEntity = portalGunEntity;
+
+		player.portals.delete(PortalType.BLUE.toString());
+		player.portals.delete(PortalType.ORANGE.toString());
 
 		return playerEntity;
 	}
