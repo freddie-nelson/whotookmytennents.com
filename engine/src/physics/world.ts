@@ -382,7 +382,7 @@ export class PhysicsWorld extends System {
 
       const entityA = (pair.bodyA as TypedBody).plugin!.entity;
       const entityB = (pair.bodyB as TypedBody).plugin!.entity;
-      if (!entityA || !entityB) {
+      if (!entityA || !entityB || !this.lastRegistry.has(entityA) || !this.lastRegistry.has(entityB)) {
         continue;
       }
 
