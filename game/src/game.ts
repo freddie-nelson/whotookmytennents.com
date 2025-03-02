@@ -1,16 +1,16 @@
 import Engine, { EngineOptions } from "@engine/src/engine";
 import {
-  ActionType,
-  combatAttackAction,
-  combatAttackActionValidator,
-  mouseDirAction,
-  mouseDirActionValidator,
-  movePlayerAction,
-  movePlayerActionValidator,
-  portalAttackAction,
-  portalAttackActionValidator,
-  toggleAttackModeAction,
-  toggleAttackModeActionValidator,
+	ActionType,
+	combatAttackAction,
+	combatAttackActionValidator,
+	mouseDirAction,
+	mouseDirActionValidator,
+	movePlayerAction,
+	movePlayerActionValidator,
+	portalAttackAction,
+	portalAttackActionValidator,
+	toggleAttackModeAction,
+	toggleAttackModeActionValidator,
 } from "./actions";
 import { PlayerSystem } from "./systems/playerSystem";
 import Player from "@state/src/Player";
@@ -25,182 +25,184 @@ import { PlayerComponent } from "./components/player";
 import { SpriteTag } from "@engine/src/rendering/spriteTag";
 import { SpriteType } from "@shared/src/enums";
 import { PortalGroundComponent } from "./components/portalGroundTag";
+import { levels } from "./maps";
+import { Logger } from "@shared/src/Logger";
 
 export default class Game {
-  private readonly options: EngineOptions;
-  private _engine: Engine;
+	private readonly options: EngineOptions;
+	private _engine: Engine;
 
-  constructor(options: EngineOptions) {
-    const autoStart = options.autoStart;
-    if (autoStart) {
-      options.autoStart = false;
-    }
+	constructor(options: EngineOptions) {
+		const autoStart = options.autoStart;
+		if (autoStart) {
+			options.autoStart = false;
+		}
 
-    this.options = options;
-    this._engine = new Engine(options);
+		this.options = options;
+		this._engine = new Engine(options);
 
-    if (autoStart) {
-      this.start();
-    }
-  }
+		if (autoStart) {
+			this.start();
+		}
+	}
 
-  /**
-   * Initialises the game and starts the engine/game.
-   */
-  public start() {
-    // initialise game here
-    this._engine.actions.register(ActionType.MOVE_PLAYER, movePlayerAction, movePlayerActionValidator);
-    this._engine.actions.register(
-      ActionType.TOGGLE_ATTACK_MODE,
-      toggleAttackModeAction,
-      toggleAttackModeActionValidator
-    );
-    this._engine.actions.register(ActionType.PORTAL_ATTACK, portalAttackAction, portalAttackActionValidator);
-    this._engine.actions.register(ActionType.COMBAT_ATTACK, combatAttackAction, combatAttackActionValidator);
-    this._engine.actions.register(ActionType.MOUSE_DIR, mouseDirAction, mouseDirActionValidator);
+	/**
+	 * Initialises the game and starts the engine/game.
+	 */
+	public start() {
+		// initialise game here
+		this._engine.actions.register(ActionType.MOVE_PLAYER, movePlayerAction, movePlayerActionValidator);
+		this._engine.actions.register(
+			ActionType.TOGGLE_ATTACK_MODE,
+			toggleAttackModeAction,
+			toggleAttackModeActionValidator
+		);
+		this._engine.actions.register(ActionType.PORTAL_ATTACK, portalAttackAction, portalAttackActionValidator);
+		this._engine.actions.register(ActionType.COMBAT_ATTACK, combatAttackAction, combatAttackActionValidator);
+		this._engine.actions.register(ActionType.MOUSE_DIR, mouseDirAction, mouseDirActionValidator);
 
-    this.registry.addSystem(new PlayerSystem(this.options.state.players));
+		this.registry.addSystem(new PlayerSystem(this.options.state.players));
 
-    // start engine
-    this._engine.start();
-  }
+		// start engine
+		this._engine.start();
+	}
 
-  /**
-   * Stops the game loop.
-   */
-  public stop() {
-    // stop game here
+	/**
+	 * Stops the game loop.
+	 */
+	public stop() {
+		// stop game here
 
-    // stop engine
-    this._engine.stop();
-  }
+		// stop engine
+		this._engine.stop();
+	}
 
-  /**
-   * This calls `update` on the engine.
-   *
-   * @see Engine.update()
-   */
-  public update() {
-    this._engine.update();
-  }
+	/**
+	 * This calls `update` on the engine.
+	 *
+	 * @see Engine.update()
+	 */
+	public update() {
+		this._engine.update();
+	}
 
-  /**
-   * Destroys the game and engine.
-   *
-   * Creates a new engine ready to be started again.
-   */
-  public destroy() {
-    // destroy game here
+	/**
+	 * Destroys the game and engine.
+	 *
+	 * Creates a new engine ready to be started again.
+	 */
+	public destroy() {
+		// destroy game here
 
-    // destroy engine
-    this._engine.dispose();
-    this._engine.stop();
-    this._engine = new Engine(this.options);
-  }
+		// destroy engine
+		this._engine.dispose();
+		this._engine.stop();
+		this._engine = new Engine(this.options);
+	}
 
-  // game logic
-  public createPlayer(player: Player, playerCount: number) {
-    const registry = this.registry;
+	// game logic
+	public createPlayer(player: Player, playerCount: number) {
+		const registry = this.registry;
 
-    const playerPos = new Vec2(0, 0);
-    const playerWidth = 1;
-    const playerHeight = 1.7;
+		const playerPos = new Vec2(0, 0);
+		const playerWidth = 1;
+		const playerHeight = 1.7;
 
-    // PLAYER ENTITY
-    const playerEntity = registry.create();
-    registry.add(playerEntity, new Renderable());
-    registry.add(playerEntity, new ColorTag(0xff0000));
-    registry.add(playerEntity, new PlayerComponent(playerCount));
-    registry.add(playerEntity, new SpriteTag(playerCount === 1 ? SpriteType.PLAYER_1 : SpriteType.PLAYER_2));
+		// PLAYER ENTITY
+		const playerEntity = registry.create();
+		registry.add(playerEntity, new Renderable());
+		registry.add(playerEntity, new ColorTag(0xff0000));
+		registry.add(playerEntity, new PlayerComponent(playerCount));
+		registry.add(playerEntity, new SpriteTag(playerCount === 1 ? SpriteType.PLAYER_1 : SpriteType.PLAYER_2));
 
-    const playerTransform = registry.add(playerEntity, new Transform(playerPos));
-    playerTransform.zIndex = 1;
+		const playerTransform = registry.add(playerEntity, new Transform(playerPos));
+		playerTransform.zIndex = 1;
 
-    const playerCollider = registry.add(playerEntity, new RectangleCollider(playerWidth, playerHeight));
-    playerCollider.group = PLAYER_GROUP;
+		const playerCollider = registry.add(playerEntity, new RectangleCollider(playerWidth, playerHeight));
+		playerCollider.group = PLAYER_GROUP;
 
-    const playerRigidbody = registry.add(playerEntity, new Rigidbody());
-    playerRigidbody.inertia = Infinity;
-    playerRigidbody.frictionAir = 0.2;
-    playerRigidbody.friction = 0;
+		const playerRigidbody = registry.add(playerEntity, new Rigidbody());
+		playerRigidbody.inertia = Infinity;
+		playerRigidbody.frictionAir = 0.2;
+		playerRigidbody.friction = 0;
 
-    // FIST ENTITY
-    const fistEntity = registry.create();
-    registry.add(fistEntity, new Renderable());
-    registry.add(fistEntity, new ColorTag(0xff00ff));
-    registry.add(fistEntity, new Rigidbody());
-    registry.add(fistEntity, new SpriteTag(SpriteType.FIST));
+		// FIST ENTITY
+		const fistEntity = registry.create();
+		registry.add(fistEntity, new Renderable());
+		registry.add(fistEntity, new ColorTag(0xff00ff));
+		registry.add(fistEntity, new Rigidbody());
+		registry.add(fistEntity, new SpriteTag(SpriteType.FIST));
 
-    const fistTransform = registry.add(fistEntity, new Transform(Vec2.copy(playerPos)));
-    fistTransform.zIndex = 2;
+		const fistTransform = registry.add(fistEntity, new Transform(Vec2.copy(playerPos)));
+		fistTransform.zIndex = 2;
 
-    const fistCollider = registry.add(
-      fistEntity,
-      new RectangleCollider(playerWidth * 0.35, playerWidth * 0.35)
-    );
-    fistCollider.group = PLAYER_GROUP;
-    fistCollider.isSensor = true;
+		const fistCollider = registry.add(fistEntity, new RectangleCollider(playerWidth * 0.35, playerWidth * 0.35));
+		fistCollider.group = PLAYER_GROUP;
+		fistCollider.isSensor = true;
 
-    // PORTAL GUN ENTITY
-    const portalGunEntity = registry.create();
-    registry.add(portalGunEntity, new Renderable());
-    registry.add(portalGunEntity, new ColorTag(0x00ff00));
-    registry.add(
-      portalGunEntity,
-      new SpriteTag(SpriteType.PORTAL_GUN, playerWidth * 0.85, playerWidth * 0.85)
-    );
+		// PORTAL GUN ENTITY
+		const portalGunEntity = registry.create();
+		registry.add(portalGunEntity, new Renderable());
+		registry.add(portalGunEntity, new ColorTag(0x00ff00));
+		registry.add(portalGunEntity, new SpriteTag(SpriteType.PORTAL_GUN, playerWidth * 0.85, playerWidth * 0.85));
 
-    const portalGunTransform = registry.add(portalGunEntity, new Transform(Vec2.copy(playerPos)));
-    portalGunTransform.zIndex = 3;
+		const portalGunTransform = registry.add(portalGunEntity, new Transform(Vec2.copy(playerPos)));
+		portalGunTransform.zIndex = 3;
 
-    player.entity = playerEntity;
-    player.fistEntity = fistEntity;
-    player.portalGunEntity = portalGunEntity;
+		player.entity = playerEntity;
+		player.fistEntity = fistEntity;
+		player.portalGunEntity = portalGunEntity;
 
-    return playerEntity;
-  }
+		return playerEntity;
+	}
 
-  public createLevel() {
-    const registry = this.registry;
+	public createLevel() {
+		const level = levels[0];
 
-    const map = [
-      { x: 0, y: -5, width: 40, height: 1.5 }, // floor
-      { x: -20, y: 0, width: 1.5, height: 20 }, // left wall
-      { x: 20, y: 0, width: 1.5, height: 20 }, // right wall
-    ];
+		for (const { type, data } of level) {
+			console.log(type, data);
+			switch (type) {
+				case "ground":
+					this.createGround(data.x, data.y, data.width, data.height);
+					break;
 
-    for (const { x, y, width, height } of map) {
-      const entity = registry.create();
-      registry.add(entity, new Transform(new Vec2(x, y)));
-      registry.add(entity, new Rigidbody());
-      registry.add(entity, new RectangleCollider(width, height));
-      registry.add(entity, new Renderable());
-      registry.add(entity, new ColorTag(0x0000ff));
-      registry.add(entity, new SpriteTag(SpriteType.GROUND));
-      registry.add(entity, new PortalGroundComponent());
+				default:
+					Logger.errorAndThrow("GAME", `Unknown level object type: ${type}`);
+			}
+		}
+	}
 
-      const rigidbody = registry.get(entity, Rigidbody);
-      rigidbody.isStatic = true;
-      rigidbody.friction = 0;
-      rigidbody.frictionAir = 0;
-      rigidbody.frictionStatic = 0;
+	private createGround(x: number, y: number, width: number, height: number) {
+		const entity = this.registry.create();
+		this.registry.add(entity, new Transform(new Vec2(x, y)));
+		this.registry.add(entity, new Rigidbody());
+		this.registry.add(entity, new RectangleCollider(width, height));
+		this.registry.add(entity, new Renderable());
+		this.registry.add(entity, new ColorTag(0x0000ff));
+		this.registry.add(entity, new SpriteTag(SpriteType.GROUND));
+		// this.registry.add(entity, new PortalGroundComponent());
 
-      const collider = registry.get(entity, RectangleCollider);
-      collider.group = GROUND_GROUP;
-    }
-  }
+		const rigidbody = this.registry.get(entity, Rigidbody);
+		rigidbody.isStatic = true;
+		rigidbody.friction = 0;
+		rigidbody.frictionAir = 0;
+		rigidbody.frictionStatic = 0;
 
-  // getters
+		const collider = this.registry.get(entity, RectangleCollider);
+		collider.group = GROUND_GROUP;
+	}
 
-  public get engine() {
-    return this._engine;
-  }
+	// getters
 
-  public get registry() {
-    return this._engine.registry;
-  }
+	public get engine() {
+		return this._engine;
+	}
 
-  public get actions() {
-    return this._engine.actions;
-  }
+	public get registry() {
+		return this._engine.registry;
+	}
+
+	public get actions() {
+		return this._engine.actions;
+	}
 }
