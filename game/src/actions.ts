@@ -151,6 +151,7 @@ export const portalAttackAction: ActionHandler<ActionType, PortalAttackData> = (
 
   const physics = engine.physics;
   const portalGunTransform = registry.get(player.portalGunEntity, Transform);
+  const startPos = Vec2.copy(portalGunTransform.position);
 
   const projectile = registry.create();
   registry.add(projectile, new Transform(Vec2.copy(portalGunTransform.position), Vec2.angle(mouseDir)));
@@ -176,10 +177,37 @@ export const portalAttackAction: ActionHandler<ActionType, PortalAttackData> = (
     registry.destroy(projectile);
 
     const hits = physics
-      .queryRay(portalGunTransform.position, mouseDir, 100)
+      .queryRay(startPos, mouseDir, 100)
       .filter((hit) => registry.has(hit.entity) && registry.has(hit.entity, PortalGroundComponent));
+    if (hits.length === 0) {
+      return;
+    }
 
-    console.log(hits);
+    const existingPortalEntity = player.portalEntities[type];
+    if (existingPortalEntity) {
+      registry.destroy(existingPortalEntity);
+    }
+
+    const hit = hits[0];
+
+    const portal = registry.create();
+
+    const portalTransform = registry.add(portal, new Transform(Vec2.copy(hit.point)));
+    portalTransform.rotation = Vec2.angle(hit.normal);
+
+    const portalBody = registry.add(portal, new Rigidbody());
+    portalBody.isStatic = true;
+
+    const portalCollider = registry.add(portal, new RectangleCollider(0.6, 2));
+    portalCollider.isSensor = true;
+
+    registry.add(portal, new Renderable());
+    registry.add(
+      portal,
+      new SpriteTag(type === PortalType.BLUE ? SpriteType.BLUE_PORTAL : SpriteType.ORANGE_PORTAL)
+    );
+
+    player.portalEntities[type] = portal;
   });
 };
 
