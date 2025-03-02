@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@colyseus/schema':
-        specifier: ^2.0.35
-        version: 2.0.36
+        specifier: 2.0.35
+        version: 2.0.35
     devDependencies:
       tsx:
         specifier: ^4.19.1
@@ -21,8 +21,8 @@ importers:
 
 packages:
 
-  '@colyseus/schema@2.0.36':
-    resolution: {integrity: sha512-v/rHN155kFLwCPPBi+HQlbYBqh6tH3IhSVARrkAd/PLylysugbXLm2fLpX4NlEcnCakMuenXSIbhMDPXc7/jUg==}
+  '@colyseus/schema@2.0.35':
+    resolution: {integrity: sha512-Bc1dyKCPfjDpm126r6f6qu8/Q+BXcJMd9foVfR3k7YCxRm3HnN7LNqUx1nkL9/WgLVeFSItoJIqN7AxmNYzn9w==}
     hasBin: true
 
   '@esbuild/aix-ppc64@0.25.0':
@@ -203,7 +203,7 @@ packages:
 
 snapshots:
 
-  '@colyseus/schema@2.0.36': {}
+  '@colyseus/schema@2.0.35': {}
 
   '@esbuild/aix-ppc64@0.25.0':
     optional: true

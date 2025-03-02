@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build --mode production",
     "build:staging": "tsc -b && vite build --mode staging",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "setup": "cd ../shared && pnpm i && cd ../engine && pnpm i && cd ../game && pnpm i && cd ../state && pnpm i && cd ../client"
   },
   "dependencies": {
     "@react-hook/resize-observer": "^2.0.2",
