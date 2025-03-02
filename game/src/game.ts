@@ -168,7 +168,6 @@ export default class Game {
     const level = levels[0];
 
     for (const { type, data } of level) {
-      console.log(type, data);
       switch (type) {
         case "ground":
           this.createGround(data.x, data.y, data.width, data.height);
@@ -188,7 +187,7 @@ export default class Game {
     this.registry.add(entity, new Renderable());
     this.registry.add(entity, new ColorTag(0x0000ff));
     this.registry.add(entity, new SpriteTag(SpriteType.GROUND));
-    // this.registry.add(entity, new PortalGroundComponent());
+    this.registry.add(entity, new PortalGroundComponent());
 
     const rigidbody = this.registry.get(entity, Rigidbody);
     rigidbody.isStatic = true;
