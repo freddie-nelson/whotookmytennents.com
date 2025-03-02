@@ -17,10 +17,10 @@ export enum ActionType {
 	MOUSE_DIR,
 }
 
-export const PLAYER_MOVE_FORCE = 0.6;
+export const PLAYER_MOVE_FORCE = 0.5;
 export const PLAYER_AIR_MOVE_FORCE = PLAYER_MOVE_FORCE / 2;
 export const PLAYER_WALL_JUMP_FORCE = 0.5;
-export const PLAYER_JUMP_FORCE = 1.75;
+export const PLAYER_JUMP_FORCE = 1.4;
 
 export interface MovePlayerData {
 	player: Player;
@@ -130,6 +130,9 @@ export const portalAttackAction: ActionHandler<ActionType, PortalAttackData> = (
 	if (!registry.has(player.entity)) {
 		return;
 	}
+
+	const physics = engine.physics;
+	physics.queryRay();
 };
 
 export const portalAttackActionValidator: ActionDataValidator<ActionType> = (action, data) => {

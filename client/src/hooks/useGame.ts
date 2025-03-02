@@ -43,7 +43,7 @@ export function useGame(state: State | null, player?: Player, room?: Room<State>
 		const renderer = new Renderer({
 			autoInit: false,
 			autoSize: true,
-			backgroundColor: 0xffffff,
+			backgroundColor: 0x241310,
 			scale: window.innerWidth * 0.09,
 		});
 
