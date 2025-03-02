@@ -1,6 +1,7 @@
 import Matter from "matter-js";
 import { TypedBody } from "../matter";
 import { Entity } from "../ecs/entity";
+import { Vec2 } from "../math/vec";
 
 /**
  * Performs a raycast and returns an array of raycol objects.
@@ -36,7 +37,8 @@ export default function raycast(
   }
 
   if (sort) {
-    cols.sort((a, b) => a.point.distance(start) - b.point.distance(start));
+    const startVec = new Vec2(start.x, start.y);
+    cols.sort((a, b) => Vec2.sqrDistance(a.point, startVec) - Vec2.sqrDistance(b.point, startVec));
   }
 
   return cols;
@@ -47,9 +49,9 @@ export default function raycast(
  */
 export class RayCol {
   body: TypedBody;
-  point: vec2;
-  normal: vec2;
-  verts: vec2[];
+  point: Vec2;
+  normal: Vec2;
+  verts: Vec2[];
   entity: string;
 
   /**
@@ -61,9 +63,9 @@ export class RayCol {
    */
   constructor(body: TypedBody, point: vec2, normal: vec2, verts: vec2[]) {
     this.body = body;
-    this.point = point;
-    this.normal = normal;
-    this.verts = verts;
+    this.point = new Vec2(point.x, point.y);
+    this.normal = new Vec2(normal.x, normal.y);
+    this.verts = verts.map((v) => new Vec2(v.x, v.y));
     this.entity = body.plugin?.entity ?? "";
   }
 }
