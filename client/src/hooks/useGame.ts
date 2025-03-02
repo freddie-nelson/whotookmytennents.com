@@ -164,7 +164,9 @@ export function useGame(state: State | null, player?: Player, room?: Room<State>
 
       resolve();
     })
-      .then(() => {})
+      .then(() => {
+        setIsReady(true);
+      })
       .catch((error) => {
         console.error(error);
         alert(`An error occurred while starting the game: ${error.message}`);
