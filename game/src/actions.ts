@@ -207,7 +207,7 @@ export const portalAttackAction: ActionHandler<ActionType, PortalAttackData> = (
 			}
 
 			const playerComponent = registry.get(b.id, PlayerComponent);
-			if (Date.now() - playerComponent.portalLastUsed < 200) {
+			if (Date.now() - playerComponent.portalLastUsed < 500) {
 				return;
 			}
 
