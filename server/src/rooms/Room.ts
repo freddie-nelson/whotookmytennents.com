@@ -132,14 +132,15 @@ export class DefaultRoom extends Room<State, RoomMetadata> {
 
 		this.setStarted(true);
 
+		// create level
+		const spawns = this.game?.createLevel();
+
 		// create players
 		const players = Array.from(this.state.players.values());
 		for (let i = 0; i < this.state.players.size; i++) {
-			this.game?.createPlayer(players[i], i);
+			const randomSpawn = spawns[Math.floor(Math.random() * spawns.length)];
+			this.game?.createPlayer(players[i], i, randomSpawn);
 		}
-
-		// create level
-		this.game?.createLevel();
 	}
 
 	private getPlayer(sessionId: string) {

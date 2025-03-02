@@ -51,6 +51,11 @@ export function useGame(state: State | null, player?: Player, room?: Room<State>
 		// renderer.registerSpriteCreator(spriteCreator);
 
 		const spriteImageMap = new Map<SpriteType, SpriteImage>();
+		spriteImageMap.set(SpriteType.NONE, {
+			type: SpriteImageType.SINGLE,
+			src: "/assets/images/Placeholder.png",
+			pixelated: true,
+		});
 		spriteImageMap.set(SpriteType.PLAYER_1, {
 			type: SpriteImageType.SINGLE,
 			src: "/assets/images/Rangers0.png",

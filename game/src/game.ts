@@ -103,10 +103,10 @@ export default class Game {
 	}
 
 	// game logic
-	public createPlayer(player: Player, playerCount: number) {
+	public createPlayer(player: Player, playerCount: number, spawn: Vec2) {
 		const registry = this.registry;
 
-		const playerPos = new Vec2(0, 0);
+		const playerPos = Vec2.copy(spawn);
 		const playerWidth = 1;
 		const playerHeight = 1.7;
 
@@ -114,7 +114,7 @@ export default class Game {
 		const playerEntity = registry.create();
 		registry.add(playerEntity, new Renderable());
 		registry.add(playerEntity, new ColorTag(0xff0000));
-		registry.add(playerEntity, new PlayerComponent(playerCount));
+		registry.add(playerEntity, new PlayerComponent(playerCount, spawn));
 		registry.add(playerEntity, new SpriteTag(playerCount === 1 ? SpriteType.PLAYER_1 : SpriteType.PLAYER_2));
 
 		const playerTransform = registry.add(playerEntity, new Transform(playerPos));
@@ -160,21 +160,33 @@ export default class Game {
 
 	public createLevel() {
 		const level = levels[0];
+		const spawns = [];
 
 		for (const { type, data } of level) {
 			switch (type) {
 				case "ground":
-					this.createGround(data.x, data.y, data.width, data.height);
+					this.createGround(data.x!, data.y!, data.width!, data.height!);
 					break;
 
 				case "spike":
-					this.createSpike(data.x, data.y, data.width, data.height);
+					this.createSpike(data.x!, data.y!, data.width!, data.height!);
+					break;
+
+				case "spawn":
+					this.createSpawn(data.x!, data.y!);
+					spawns.push(new Vec2(data.x!, data.y!));
 					break;
 
 				default:
 					Logger.errorAndThrow("GAME", `Unknown level object type: ${type}`);
 			}
 		}
+
+		if (spawns.length === 0) {
+			Logger.errorAndThrow("GAME", "No spawn points found in level");
+		}
+
+		return spawns;
 	}
 
 	private createGround(x: number, y: number, width: number, height: number) {
@@ -215,9 +227,21 @@ export default class Game {
 				return;
 			}
 
+			const playerPlayerComponent = this.registry.get(b.id, PlayerComponent);
 			const playerRigidbody = this.registry.get(b.id, Rigidbody);
-			Rigidbody.setPosition(playerRigidbody, new Vec2(5, 5));
+			Rigidbody.setPosition(
+				playerRigidbody,
+				new Vec2(playerPlayerComponent.spawn.x, playerPlayerComponent.spawn.y)
+			);
 		});
+	}
+
+	private createSpawn(x: number, y: number) {
+		const entity = this.registry.create();
+		this.registry.add(entity, new Transform(new Vec2(x, y)));
+		this.registry.add(entity, new Renderable());
+		this.registry.add(entity, new ColorTag(0x00ff00));
+		this.registry.add(entity, new SpriteTag(SpriteType.NONE, 1, 1));
 	}
 
 	// getters
