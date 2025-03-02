@@ -5,8 +5,11 @@ import { Keyboard } from "@engine/src/input/keyboard";
 import { Vec2 } from "@engine/src/math/vec";
 import { RectangleCollider } from "@engine/src/physics/collider";
 import { Rigidbody } from "@engine/src/physics/rigidbody";
+import { SpriteTag } from "@engine/src/rendering/spriteTag";
+import { SpriteType } from "@shared/src/enums";
 import { GROUND_GROUP } from "@shared/src/groups";
 import { State } from "@state/src/state";
+import { PlayerComponent } from "../components/player";
 
 export class PlayerSystem extends System {
 	private readonly players: State["players"];
@@ -26,6 +29,8 @@ export class PlayerSystem extends System {
 			const rigidbody = registry.get(p.entity, Rigidbody);
 			const transform = registry.get(p.entity, Transform);
 			const collider = registry.get(p.entity, RectangleCollider);
+			const spriteTag = registry.get(p.entity, SpriteTag);
+			const playerComponent = registry.get(p.entity, PlayerComponent);
 
 			const groundCollisions = engine.physics.queryRay(
 				transform.position,
@@ -53,6 +58,17 @@ export class PlayerSystem extends System {
 				Rigidbody.setFrictionAir(rigidbody, 0.8);
 			} else {
 				Rigidbody.setFrictionAir(rigidbody, 0.05);
+			}
+
+			// animation
+			if (isGrounded && Math.abs(rigidbody.velocity.x) > 1e-2) {
+				spriteTag.spriteType =
+					playerComponent.playerNumber === 1 ? SpriteType.PLAYER_1_RUN : SpriteType.PLAYER_2_RUN;
+			} else if (isGrounded) {
+				spriteTag.spriteType = playerComponent.playerNumber === 1 ? SpriteType.PLAYER_1 : SpriteType.PLAYER_2;
+			} else {
+				spriteTag.spriteType =
+					playerComponent.playerNumber === 1 ? SpriteType.PLAYER_1_JUMP : SpriteType.PLAYER_2_JUMP;
 			}
 
 			// const t = registry.get(p.entity, Transform);

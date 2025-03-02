@@ -107,11 +107,13 @@ export default class Game {
 
 		// PLAYER ENTITY
 		const playerEntity = registry.create();
-		registry.add(playerEntity, new Transform(playerPos));
 		registry.add(playerEntity, new Renderable());
 		registry.add(playerEntity, new ColorTag(0xff0000));
-		registry.add(playerEntity, new PlayerComponent());
+		registry.add(playerEntity, new PlayerComponent(playerCount));
 		registry.add(playerEntity, new SpriteTag(playerCount === 1 ? SpriteType.PLAYER_1 : SpriteType.PLAYER_2));
+
+		const playerTransform = registry.add(playerEntity, new Transform(playerPos));
+		playerTransform.zIndex = 1;
 
 		const playerCollider = registry.add(playerEntity, new RectangleCollider(playerWidth, playerHeight));
 		playerCollider.group = PLAYER_GROUP;
@@ -123,11 +125,13 @@ export default class Game {
 
 		// FIST ENTITY
 		const fistEntity = registry.create();
-		registry.add(fistEntity, new Transform(Vec2.copy(playerPos)));
 		registry.add(fistEntity, new Renderable());
 		registry.add(fistEntity, new ColorTag(0xff00ff));
 		registry.add(fistEntity, new Rigidbody());
 		registry.add(fistEntity, new SpriteTag(SpriteType.FIST));
+
+		const fistTransform = registry.add(fistEntity, new Transform(Vec2.copy(playerPos)));
+		fistTransform.zIndex = 2;
 
 		const fistCollider = registry.add(fistEntity, new RectangleCollider(playerWidth * 0.35, playerWidth * 0.35));
 		fistCollider.group = PLAYER_GROUP;
@@ -135,10 +139,12 @@ export default class Game {
 
 		// PORTAL GUN ENTITY
 		const portalGunEntity = registry.create();
-		registry.add(portalGunEntity, new Transform(Vec2.copy(playerPos)));
 		registry.add(portalGunEntity, new Renderable());
 		registry.add(portalGunEntity, new ColorTag(0x00ff00));
 		registry.add(portalGunEntity, new SpriteTag(SpriteType.PORTAL_GUN, playerWidth * 0.85, playerWidth * 0.85));
+
+		const portalGunTransform = registry.add(portalGunEntity, new Transform(Vec2.copy(playerPos)));
+		portalGunTransform.zIndex = 3;
 
 		player.entity = playerEntity;
 		player.fistEntity = fistEntity;

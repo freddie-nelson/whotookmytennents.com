@@ -8,6 +8,7 @@ import {
 	Texture,
 	Container,
 	TilingSprite,
+	AnimatedSprite,
 } from "pixi.js";
 import { SpriteCreator, SpriteCreatorCreate, SpriteCreatorDelete, SpriteCreatorUpdate } from "../renderer";
 import { Rigidbody } from "../../physics/rigidbody";
@@ -28,13 +29,24 @@ export enum SpriteImageType {
 	ANIMATED,
 }
 
-export interface SpriteImage {
-	type: SpriteImageType;
+export interface SingleSpriteImage {
+	type: SpriteImageType.SINGLE | SpriteImageType.TILE;
 	src: string;
 	tileWidth?: number;
 	tileHeight?: number;
 	pixelated?: boolean;
 }
+
+export interface AnimatedSpriteImage {
+	type: SpriteImageType.ANIMATED;
+	src: string[];
+	pixelated?: boolean;
+	animationSpeed?: number;
+	loop?: boolean;
+	autoUpdate?: boolean;
+}
+
+export type SpriteImage = SingleSpriteImage | AnimatedSpriteImage;
 
 /**
  * Creates sprites based on entities with the SpriteTag component.
@@ -46,10 +58,12 @@ export default class SpriteSpriteCreator implements SpriteCreator {
 
 	private readonly spriteImageMap: Map<number, SpriteImage>;
 	private readonly textureCache: Map<string, Texture>;
+	private readonly createdSpriteTypeMap: Map<string, number>;
 
 	constructor(spriteImageMap: Map<number, SpriteImage> = new Map()) {
 		this.spriteImageMap = spriteImageMap;
 		this.textureCache = new Map();
+		this.createdSpriteTypeMap = new Map();
 	}
 
 	public readonly create: SpriteCreatorCreate = ({ app, registry, world, entity }) => {
@@ -65,12 +79,6 @@ export default class SpriteSpriteCreator implements SpriteCreator {
 				"RENDERER",
 				`Sprite image map does not contain an image for type '${spriteTag.spriteType}'.`
 			);
-		}
-
-		const image = this.spriteImageMap.get(spriteTag.spriteType)!;
-		const texture = this.getTexture(image.src);
-		if (!texture) {
-			Logger.errorAndThrow("RENDERER", `Texture for image '${image}' not found.`);
 		}
 
 		let width = 0;
@@ -112,11 +120,13 @@ export default class SpriteSpriteCreator implements SpriteCreator {
 		const container = new Container();
 		container.pivot.set(width / 2, height / 2);
 
+		const image = this.spriteImageMap.get(spriteTag.spriteType)!;
+
 		let s: ContainerChild;
 		switch (image.type) {
 			case SpriteImageType.SINGLE:
 				s = new Sprite({
-					texture,
+					texture: this.getTexture(image.src),
 					width,
 					height,
 				});
@@ -130,40 +140,56 @@ export default class SpriteSpriteCreator implements SpriteCreator {
 				}
 
 				s = new TilingSprite({
-					texture,
+					texture: this.getTexture(image.src),
 					width,
 					height,
 				});
 				(s as TilingSprite).tileScale.set(1 / image.tileWidth!, 1 / image.tileHeight!);
 				break;
 			case SpriteImageType.ANIMATED:
-			default:
-				Logger.errorAndThrow("RENDERER", `Unsupported sprite image type: ${image.type}`);
+				s = new AnimatedSprite({
+					textures: this.getTextureArray(image.src),
+					width,
+					height,
+					autoUpdate: image.autoUpdate ?? true,
+				});
+				(s as AnimatedSprite).loop = image.loop ?? true;
+				(s as AnimatedSprite).animationSpeed = image.animationSpeed ?? 1;
+				(s as AnimatedSprite).play();
+				break;
+			// default:
+			// 	Logger.errorAndThrow("RENDERER", `Unsupported sprite image type: ${image.type}`);
 
-				// will never happen
-				return container;
+			// 	// will never happen
+			// 	return container;
 		}
 
 		container.addChild(s);
 		world.addChild(container);
 
-		const position = Vec2.lerp(new Vec2(container.position.x, container.position.y), transform.position, 0.2);
-		container.position.set(position.x, position.y);
-
+		container.position.set(transform.position.x, transform.position.y);
 		container.rotation = transform.rotation;
 		container.scale.set(transform.scale.x, -transform.scale.y);
 		container.zIndex = transform.zIndex;
 		container.alpha = spriteTag.opacity;
 
+		this.createdSpriteTypeMap.set(entity, spriteTag.spriteType);
+
 		return container;
 	};
 
-	public readonly update: SpriteCreatorUpdate = ({ registry, app, entity, sprite, dt }) => {
+	public readonly update: SpriteCreatorUpdate = (data) => {
+		const { registry, app, entity, sprite, dt } = data;
+
 		const e = registry.get(entity);
 		const s = sprite!;
 
 		const transform = Entity.getComponent(e, Transform);
 		const spriteTag = Entity.getComponent(e, SpriteTag);
+
+		if (spriteTag.spriteType !== this.createdSpriteTypeMap.get(entity)) {
+			return this.create(data);
+		}
 
 		const position = Vec2.lerp(new Vec2(s.position.x, s.position.y), transform.position, CLIENT_LERP_RATE);
 		s.position.set(position.x, position.y);
@@ -186,16 +212,23 @@ export default class SpriteSpriteCreator implements SpriteCreator {
 	 */
 	public async preloadTextures() {
 		for (const image of this.spriteImageMap.values()) {
-			const res = await Assets.load(image);
-			if (image.pixelated) {
-				res.source.scaleMode = "nearest";
-			}
+			const sources = image.type === SpriteImageType.ANIMATED ? (image as AnimatedSpriteImage).src : [image.src];
+			for (const src of sources) {
+				const res = await Assets.load(src);
+				if (image.pixelated) {
+					res.source.scaleMode = "nearest";
+				}
 
-			this.textureCache.set(image.src, res);
+				this.textureCache.set(src, res);
+			}
 		}
 	}
 
 	private getTexture(image: string) {
 		return this.textureCache.get(image);
+	}
+
+	private getTextureArray(image: string[]) {
+		return image.map((i) => this.textureCache.get(i)!);
 	}
 }

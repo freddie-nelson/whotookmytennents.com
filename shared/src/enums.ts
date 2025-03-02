@@ -1,7 +1,11 @@
 export enum SpriteType {
 	NONE,
 	PLAYER_1,
+	PLAYER_1_RUN,
+	PLAYER_1_JUMP,
 	PLAYER_2,
+	PLAYER_2_RUN,
+	PLAYER_2_JUMP,
 	FIST,
 	PORTAL_GUN,
 	GROUND,

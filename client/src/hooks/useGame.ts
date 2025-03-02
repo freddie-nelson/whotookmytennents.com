@@ -56,10 +56,32 @@ export function useGame(state: State | null, player?: Player, room?: Room<State>
 			src: "/assets/images/Rangers0.png",
 			pixelated: true,
 		});
+		spriteImageMap.set(SpriteType.PLAYER_1_JUMP, {
+			type: SpriteImageType.SINGLE,
+			src: "/assets/images/Rangers3.png",
+			pixelated: true,
+		});
+		spriteImageMap.set(SpriteType.PLAYER_1_RUN, {
+			type: SpriteImageType.ANIMATED,
+			src: ["/assets/images/Rangers1.png", "/assets/images/Rangers2.png"],
+			pixelated: true,
+			animationSpeed: 0.2,
+		});
 		spriteImageMap.set(SpriteType.PLAYER_2, {
 			type: SpriteImageType.SINGLE,
 			src: "/assets/images/Celtic0.png",
 			pixelated: true,
+		});
+		spriteImageMap.set(SpriteType.PLAYER_2_JUMP, {
+			type: SpriteImageType.SINGLE,
+			src: "/assets/images/Celtic3.png",
+			pixelated: true,
+		});
+		spriteImageMap.set(SpriteType.PLAYER_2_RUN, {
+			type: SpriteImageType.ANIMATED,
+			src: ["/assets/images/Celtic1.png", "/assets/images/Celtic2.png"],
+			pixelated: true,
+			animationSpeed: 0.2,
 		});
 		spriteImageMap.set(SpriteType.FIST, {
 			type: SpriteImageType.SINGLE,
