@@ -1,16 +1,16 @@
 import Engine, { EngineOptions } from "@engine/src/engine";
 import {
-  ActionType,
-  combatAttackAction,
-  combatAttackActionValidator,
-  mouseDirAction,
-  mouseDirActionValidator,
-  movePlayerAction,
-  movePlayerActionValidator,
-  portalAttackAction,
-  portalAttackActionValidator,
-  toggleAttackModeAction,
-  toggleAttackModeActionValidator,
+	ActionType,
+	combatAttackAction,
+	combatAttackActionValidator,
+	mouseDirAction,
+	mouseDirActionValidator,
+	movePlayerAction,
+	movePlayerActionValidator,
+	portalAttackAction,
+	portalAttackActionValidator,
+	toggleAttackModeAction,
+	toggleAttackModeActionValidator,
 } from "./actions";
 import { PlayerSystem } from "./systems/playerSystem";
 import Player from "@state/src/Player";
@@ -31,282 +31,295 @@ import { Logger } from "@shared/src/Logger";
 import { GoalComponent } from "./components/goalTag";
 
 export default class Game {
-  private readonly options: EngineOptions;
-  private _engine: Engine;
+	private readonly options: EngineOptions;
+	private _engine: Engine;
 
-  constructor(options: EngineOptions) {
-    const autoStart = options.autoStart;
-    if (autoStart) {
-      options.autoStart = false;
-    }
+	private _levelsCompleted: number = 0;
 
-    this.options = options;
-    this._engine = new Engine(options);
+	constructor(options: EngineOptions) {
+		const autoStart = options.autoStart;
+		if (autoStart) {
+			options.autoStart = false;
+		}
 
-    if (autoStart) {
-      this.start();
-    }
-  }
+		this.options = options;
+		this._engine = new Engine(options);
 
-  /**
-   * Initialises the game and starts the engine/game.
-   */
-  public start() {
-    // initialise game here
-    this._engine.actions.register(ActionType.MOVE_PLAYER, movePlayerAction, movePlayerActionValidator);
-    this._engine.actions.register(
-      ActionType.TOGGLE_ATTACK_MODE,
-      toggleAttackModeAction,
-      toggleAttackModeActionValidator
-    );
-    this._engine.actions.register(ActionType.PORTAL_ATTACK, portalAttackAction, portalAttackActionValidator);
-    this._engine.actions.register(ActionType.COMBAT_ATTACK, combatAttackAction, combatAttackActionValidator);
-    this._engine.actions.register(ActionType.MOUSE_DIR, mouseDirAction, mouseDirActionValidator);
+		if (autoStart) {
+			this.start();
+		}
+	}
 
-    this.registry.addSystem(new PlayerSystem(this.options.state.players));
-    this.registry.addSystem(new ProjectileSystem());
+	/**
+	 * Initialises the game and starts the engine/game.
+	 */
+	public start() {
+		// initialise game here
+		this._engine.actions.register(ActionType.MOVE_PLAYER, movePlayerAction, movePlayerActionValidator);
+		this._engine.actions.register(
+			ActionType.TOGGLE_ATTACK_MODE,
+			toggleAttackModeAction,
+			toggleAttackModeActionValidator
+		);
+		this._engine.actions.register(ActionType.PORTAL_ATTACK, portalAttackAction, portalAttackActionValidator);
+		this._engine.actions.register(ActionType.COMBAT_ATTACK, combatAttackAction, combatAttackActionValidator);
+		this._engine.actions.register(ActionType.MOUSE_DIR, mouseDirAction, mouseDirActionValidator);
 
-    // start engine
-    this._engine.start();
-  }
+		this.registry.addSystem(new PlayerSystem(this.options.state.players));
+		this.registry.addSystem(new ProjectileSystem());
 
-  /**
-   * Stops the game loop.
-   */
-  public stop() {
-    // stop game here
+		// start engine
+		this._engine.start();
+	}
 
-    // stop engine
-    this._engine.stop();
-  }
+	/**
+	 * Stops the game loop.
+	 */
+	public stop() {
+		// stop game here
 
-  /**
-   * This calls `update` on the engine.
-   *
-   * @see Engine.update()
-   */
-  public update() {
-    this._engine.update();
-  }
+		// stop engine
+		this._engine.stop();
+	}
 
-  /**
-   * Destroys the game and engine.
-   *
-   * Creates a new engine ready to be started again.
-   */
-  public destroy() {
-    // destroy game here
+	/**
+	 * This calls `update` on the engine.
+	 *
+	 * @see Engine.update()
+	 */
+	public update() {
+		this._engine.update();
+	}
 
-    // destroy engine
-    this._engine.dispose();
-    this._engine.stop();
-    this._engine = new Engine(this.options);
-  }
+	/**
+	 * Destroys the game and engine.
+	 *
+	 * Creates a new engine ready to be started again.
+	 */
+	public destroy() {
+		// destroy game here
 
-  // game logic
-  public createPlayer(player: Player, playerCount: number, spawn: Vec2) {
-    const registry = this.registry;
+		// destroy engine
+		this._engine.dispose();
+		this._engine.stop();
+		this._engine = new Engine(this.options);
+	}
 
-    const playerPos = Vec2.copy(spawn);
-    const playerWidth = 1;
-    const playerHeight = 1.7;
+	public clearAndLoadLevelAndPlayers(levelIndex: number, players: Player[]) {
+		// clear all entities
+		for (const entity of this.registry.getEntities().keys()) {
+			this.registry.destroy(entity);
+		}
 
-    // PLAYER ENTITY
-    const playerEntity = registry.create();
-    registry.add(playerEntity, new Renderable());
-    registry.add(playerEntity, new ColorTag(0xff0000));
-    registry.add(playerEntity, new PlayerComponent(playerCount, spawn));
-    registry.add(playerEntity, new SpriteTag(playerCount === 1 ? SpriteType.PLAYER_1 : SpriteType.PLAYER_2));
+		// create level
+		const [spawn1, spawn2, goal] = this.loadLevel(levelIndex, players);
 
-    const playerTransform = registry.add(playerEntity, new Transform(playerPos));
-    playerTransform.zIndex = 1;
+		// create players
+		for (let i = 0; i < players.length; i++) {
+			const playerSpawn = [spawn1, spawn2][i];
+			this.createPlayer(players[i], i, playerSpawn);
+		}
+	}
 
-    const playerCollider = registry.add(playerEntity, new RectangleCollider(playerWidth, playerHeight));
-    playerCollider.group = PLAYER_GROUP;
+	private loadLevel(levelIndex: number, players: Player[]) {
+		const level = levels[levelIndex];
+		const spawns = [];
+		const goals = [];
 
-    const playerRigidbody = registry.add(playerEntity, new Rigidbody());
-    playerRigidbody.inertia = Infinity;
-    playerRigidbody.frictionAir = 0.2;
-    playerRigidbody.friction = 0;
+		for (const { type, x, y, width, height } of level) {
+			switch (type) {
+				case "ground":
+					this.createGround(x, -y, width, height);
+					break;
 
-    // FIST ENTITY
-    const fistEntity = registry.create();
-    registry.add(fistEntity, new Renderable());
-    registry.add(fistEntity, new ColorTag(0xff00ff));
-    registry.add(fistEntity, new Rigidbody());
-    registry.add(fistEntity, new SpriteTag(SpriteType.FIST));
+				case "spike":
+					this.createSpike(x, -y, width, height);
+					break;
 
-    const fistTransform = registry.add(fistEntity, new Transform(Vec2.copy(playerPos)));
-    fistTransform.zIndex = 2;
+				case "spawn":
+					this.createSpawn(x, -y, width, height);
+					spawns.push(new Vec2(x, -y));
+					break;
 
-    const fistCollider = registry.add(
-      fistEntity,
-      new RectangleCollider(playerWidth * 0.35, playerWidth * 0.35)
-    );
-    fistCollider.group = PLAYER_GROUP;
-    fistCollider.isSensor = true;
+				case "goal":
+					this.createGoal(x, -y, width, height, players);
+					goals.push(new Vec2(x, -y));
+					break;
 
-    // PORTAL GUN ENTITY
-    const portalGunEntity = registry.create();
-    registry.add(portalGunEntity, new Renderable());
-    registry.add(portalGunEntity, new ColorTag(0x00ff00));
-    registry.add(
-      portalGunEntity,
-      new SpriteTag(SpriteType.PORTAL_GUN, playerWidth * 0.85, playerWidth * 0.85)
-    );
+				default:
+					Logger.errorAndThrow("GAME", `Unknown level object type: ${type}`);
+			}
+		}
 
-    const portalGunTransform = registry.add(portalGunEntity, new Transform(Vec2.copy(playerPos)));
-    portalGunTransform.zIndex = 3;
+		if (spawns.length !== 2) {
+			Logger.errorAndThrow("GAME", "Two spawns are required for a level.");
+		} else if (goals.length !== 1) {
+			Logger.errorAndThrow("GAME", "One goal is required for a level.");
+		}
 
-    player.entity = playerEntity;
-    player.fistEntity = fistEntity;
-    player.portalGunEntity = portalGunEntity;
+		return [spawns[0], spawns[1], goals[0]];
+	}
 
-    return playerEntity;
-  }
+	private createPlayer(player: Player, playerCount: number, spawn: Vec2) {
+		const registry = this.registry;
 
-  public createLevel() {
-    const level = levels[0];
-    const spawns = [];
-    const goals = [];
+		const playerPos = Vec2.copy(spawn);
+		const playerWidth = 1;
+		const playerHeight = 1.7;
 
-    for (const { type, x, y, width, height } of level) {
-      switch (type) {
-        case "ground":
-          this.createGround(x, -y, width, height);
-          break;
+		// PLAYER ENTITY
+		const playerEntity = registry.create();
+		registry.add(playerEntity, new Renderable());
+		registry.add(playerEntity, new ColorTag(0xff0000));
+		registry.add(playerEntity, new PlayerComponent(playerCount, spawn));
+		registry.add(playerEntity, new SpriteTag(playerCount === 1 ? SpriteType.PLAYER_1 : SpriteType.PLAYER_2));
 
-        case "spike":
-          this.createSpike(x, -y, width, height);
-          break;
+		const playerTransform = registry.add(playerEntity, new Transform(playerPos));
+		playerTransform.zIndex = 1;
 
-        case "spawn":
-          this.createSpawn(x, -y, width, height);
-          spawns.push(new Vec2(x, -y));
-          break;
+		const playerCollider = registry.add(playerEntity, new RectangleCollider(playerWidth, playerHeight));
+		playerCollider.group = PLAYER_GROUP;
 
-        case "goal":
-          this.createGoal(x, -y, width, height);
-          goals.push(new Vec2(x, -y));
-          break;
+		const playerRigidbody = registry.add(playerEntity, new Rigidbody());
+		playerRigidbody.inertia = Infinity;
+		playerRigidbody.frictionAir = 0.2;
+		playerRigidbody.friction = 0;
 
-        default:
-          Logger.errorAndThrow("GAME", `Unknown level object type: ${type}`);
-      }
-    }
+		// FIST ENTITY
+		const fistEntity = registry.create();
+		registry.add(fistEntity, new Renderable());
+		registry.add(fistEntity, new ColorTag(0xff00ff));
+		registry.add(fistEntity, new Rigidbody());
+		registry.add(fistEntity, new SpriteTag(SpriteType.FIST));
 
-    if (spawns.length !== 2) {
-      Logger.errorAndThrow("GAME", "Two spawns are required for a level.");
-    } else if (goals.length !== 1) {
-      Logger.errorAndThrow("GAME", "One goal is required for a level.");
-    }
+		const fistTransform = registry.add(fistEntity, new Transform(Vec2.copy(playerPos)));
+		fistTransform.zIndex = 2;
 
-    return [spawns[0], spawns[1], goals[0]];
-  }
+		const fistCollider = registry.add(fistEntity, new RectangleCollider(playerWidth * 0.35, playerWidth * 0.35));
+		fistCollider.group = PLAYER_GROUP;
+		fistCollider.isSensor = true;
 
-  private createGround(x: number, y: number, width: number, height: number) {
-    const entity = this.registry.create();
-    this.registry.add(entity, new Transform(new Vec2(x, y)));
-    this.registry.add(entity, new Renderable());
-    this.registry.add(entity, new ColorTag(0x0000ff));
-    this.registry.add(entity, new SpriteTag(SpriteType.GROUND));
-    this.registry.add(entity, new PortalGroundComponent());
+		// PORTAL GUN ENTITY
+		const portalGunEntity = registry.create();
+		registry.add(portalGunEntity, new Renderable());
+		registry.add(portalGunEntity, new ColorTag(0x00ff00));
+		registry.add(portalGunEntity, new SpriteTag(SpriteType.PORTAL_GUN, playerWidth * 0.85, playerWidth * 0.85));
 
-    const rigidbody = this.registry.add(entity, new Rigidbody());
-    rigidbody.isStatic = true;
-    rigidbody.friction = 0;
-    rigidbody.frictionAir = 0;
-    rigidbody.frictionStatic = 0;
+		const portalGunTransform = registry.add(portalGunEntity, new Transform(Vec2.copy(playerPos)));
+		portalGunTransform.zIndex = 3;
 
-    const collider = this.registry.add(entity, new RectangleCollider(width, height));
-    collider.group = GROUND_GROUP;
-  }
+		player.entity = playerEntity;
+		player.fistEntity = fistEntity;
+		player.portalGunEntity = portalGunEntity;
 
-  private createSpike(x: number, y: number, width: number, height: number) {
-    const entity = this.registry.create();
-    this.registry.add(entity, new Transform(new Vec2(x, y)));
-    this.registry.add(entity, new Renderable());
-    this.registry.add(entity, new ColorTag(0xff0000));
-    this.registry.add(entity, new SpriteTag(SpriteType.SPIKE));
+		return playerEntity;
+	}
 
-    const rigidbody = this.registry.add(entity, new Rigidbody());
-    rigidbody.isStatic = true;
-    rigidbody.friction = 0;
-    rigidbody.frictionAir = 0;
-    rigidbody.frictionStatic = 0;
+	private createGround(x: number, y: number, width: number, height: number) {
+		const entity = this.registry.create();
+		this.registry.add(entity, new Transform(new Vec2(x, y)));
+		this.registry.add(entity, new Renderable());
+		this.registry.add(entity, new ColorTag(0x0000ff));
+		this.registry.add(entity, new SpriteTag(SpriteType.GROUND));
+		this.registry.add(entity, new PortalGroundComponent());
 
-    const collider = this.registry.add(entity, new RectangleCollider(width, height));
-    collider.group = SPIKE_GROUP;
-    RectangleCollider.on(collider, ColliderEvent.COLLISION_START, (pair, a, b) => {
-      if (!this.registry.has(b.id, PlayerComponent)) {
-        return;
-      }
+		const rigidbody = this.registry.add(entity, new Rigidbody());
+		rigidbody.isStatic = true;
+		rigidbody.friction = 0;
+		rigidbody.frictionAir = 0;
+		rigidbody.frictionStatic = 0;
 
-      const playerPlayerComponent = this.registry.get(b.id, PlayerComponent);
-      const playerTransform = this.registry.get(b.id, Transform);
-      Vec2.set(playerTransform.position, playerPlayerComponent.spawn.x, playerPlayerComponent.spawn.y);
-    });
-  }
+		const collider = this.registry.add(entity, new RectangleCollider(width, height));
+		collider.group = GROUND_GROUP;
+	}
 
-  private createSpawn(x: number, y: number, width: number, height: number) {
-    const entity = this.registry.create();
-    this.registry.add(entity, new Transform(new Vec2(x, y)));
-    this.registry.add(entity, new Renderable());
-    this.registry.add(entity, new ColorTag(0x00ff00));
-    this.registry.add(entity, new SpriteTag(SpriteType.NONE, width, height));
-  }
+	private createSpike(x: number, y: number, width: number, height: number) {
+		const entity = this.registry.create();
+		this.registry.add(entity, new Transform(new Vec2(x, y)));
+		this.registry.add(entity, new Renderable());
+		this.registry.add(entity, new ColorTag(0xff0000));
+		this.registry.add(entity, new SpriteTag(SpriteType.SPIKE));
 
-  private createGoal(x: number, y: number, width: number, height: number) {
-    const entity = this.registry.create();
-    this.registry.add(entity, new Transform(new Vec2(x, y)));
-    this.registry.add(entity, new Renderable());
-    this.registry.add(entity, new ColorTag(0x00ff00));
-    this.registry.add(entity, new SpriteTag(SpriteType.GOAL, width, height));
+		const rigidbody = this.registry.add(entity, new Rigidbody());
+		rigidbody.isStatic = true;
+		rigidbody.friction = 0;
+		rigidbody.frictionAir = 0;
+		rigidbody.frictionStatic = 0;
 
-    const rigidbody = this.registry.add(entity, new Rigidbody());
-    rigidbody.isStatic = true;
-    rigidbody.friction = 0;
-    rigidbody.frictionAir = 0;
-    rigidbody.frictionStatic = 0;
+		const collider = this.registry.add(entity, new RectangleCollider(width, height));
+		collider.group = SPIKE_GROUP;
+		RectangleCollider.on(collider, ColliderEvent.COLLISION_START, (pair, a, b) => {
+			if (!this.registry.has(b.id, PlayerComponent)) {
+				return;
+			}
 
-    const goal = this.registry.add(entity, new GoalComponent());
+			const playerPlayerComponent = this.registry.get(b.id, PlayerComponent);
+			const playerTransform = this.registry.get(b.id, Transform);
+			Vec2.set(playerTransform.position, playerPlayerComponent.spawn.x, playerPlayerComponent.spawn.y);
+		});
+	}
 
-    const collider = this.registry.add(entity, new RectangleCollider(width, height));
-    collider.group = GOAL_GROUP;
+	private createSpawn(x: number, y: number, width: number, height: number) {
+		const entity = this.registry.create();
+		this.registry.add(entity, new Transform(new Vec2(x, y)));
+		this.registry.add(entity, new Renderable());
+		this.registry.add(entity, new ColorTag(0x00ff00));
+		this.registry.add(entity, new SpriteTag(SpriteType.NONE, width, height));
+	}
 
-    RectangleCollider.on(collider, ColliderEvent.COLLISION_START, (pair, a, b) => {
-      if (!this.registry.has(b.id, PlayerComponent)) {
-        return;
-      }
+	private createGoal(x: number, y: number, width: number, height: number, players: Player[]) {
+		const entity = this.registry.create();
+		this.registry.add(entity, new Transform(new Vec2(x, y)));
+		this.registry.add(entity, new Renderable());
+		this.registry.add(entity, new ColorTag(0x00ff00));
+		this.registry.add(entity, new SpriteTag(SpriteType.GOAL, width, height));
 
-      const playerPlayerComponent = this.registry.get(b.id, PlayerComponent);
+		const rigidbody = this.registry.add(entity, new Rigidbody());
+		rigidbody.isStatic = true;
+		rigidbody.friction = 0;
+		rigidbody.frictionAir = 0;
+		rigidbody.frictionStatic = 0;
 
-      switch (playerPlayerComponent.playerNumber) {
-        case 0:
-          goal.player1Collided = true;
-          break;
-        case 1:
-          goal.player2Collided = true;
-          break;
-      }
+		const goal = this.registry.add(entity, new GoalComponent());
 
-      if (goal.player1Collided && goal.player2Collided) {
-        console.log("Both players reached the goal!");
-      }
-    });
-  }
+		const collider = this.registry.add(entity, new RectangleCollider(width, height));
+		collider.group = GOAL_GROUP;
 
-  // getters
+		RectangleCollider.on(collider, ColliderEvent.COLLISION_START, (pair, a, b) => {
+			if (!this.registry.has(b.id, PlayerComponent)) {
+				return;
+			}
 
-  public get engine() {
-    return this._engine;
-  }
+			const playerPlayerComponent = this.registry.get(b.id, PlayerComponent);
 
-  public get registry() {
-    return this._engine.registry;
-  }
+			switch (playerPlayerComponent.playerNumber) {
+				case 0:
+					goal.player1Collided = true;
+					break;
+				case 1:
+					goal.player2Collided = true;
+					break;
+			}
 
-  public get actions() {
-    return this._engine.actions;
-  }
+			if (goal.player1Collided && goal.player2Collided) {
+				this._levelsCompleted++;
+				console.log("Both players reached the goal!");
+				this.clearAndLoadLevelAndPlayers(this._levelsCompleted, players);
+			}
+		});
+	}
+
+	// getters
+
+	public get engine() {
+		return this._engine;
+	}
+
+	public get registry() {
+		return this._engine.registry;
+	}
+
+	public get actions() {
+		return this._engine.actions;
+	}
 }
