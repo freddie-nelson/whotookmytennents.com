@@ -26,6 +26,8 @@ import { SpriteTag } from "@engine/src/rendering/spriteTag";
 import { SpriteType } from "@shared/src/enums";
 import { PortalGroundComponent } from "./components/portalGroundTag";
 import { ProjectileSystem } from "./systems/projectileSystem";
+import { levels } from "./maps";
+import { Logger } from "@shared/src/Logger";
 
 export default class Game {
   private readonly options: EngineOptions;
@@ -163,33 +165,39 @@ export default class Game {
   }
 
   public createLevel() {
-    const registry = this.registry;
+    const level = levels[0];
 
-    const map = [
-      { x: 0, y: -5, width: 40, height: 1.5 }, // floor
-      { x: -20, y: 0, width: 1.5, height: 20 }, // left wall
-      { x: 20, y: 0, width: 1.5, height: 20 }, // right wall
-    ];
+    for (const { type, data } of level) {
+      console.log(type, data);
+      switch (type) {
+        case "ground":
+          this.createGround(data.x, data.y, data.width, data.height);
+          break;
 
-    for (const { x, y, width, height } of map) {
-      const entity = registry.create();
-      registry.add(entity, new Transform(new Vec2(x, y)));
-      registry.add(entity, new Rigidbody());
-      registry.add(entity, new RectangleCollider(width, height));
-      registry.add(entity, new Renderable());
-      registry.add(entity, new ColorTag(0x0000ff));
-      registry.add(entity, new SpriteTag(SpriteType.GROUND));
-      registry.add(entity, new PortalGroundComponent());
-
-      const rigidbody = registry.get(entity, Rigidbody);
-      rigidbody.isStatic = true;
-      rigidbody.friction = 0;
-      rigidbody.frictionAir = 0;
-      rigidbody.frictionStatic = 0;
-
-      const collider = registry.get(entity, RectangleCollider);
-      collider.group = GROUND_GROUP;
+        default:
+          Logger.errorAndThrow("GAME", `Unknown level object type: ${type}`);
+      }
     }
+  }
+
+  private createGround(x: number, y: number, width: number, height: number) {
+    const entity = this.registry.create();
+    this.registry.add(entity, new Transform(new Vec2(x, y)));
+    this.registry.add(entity, new Rigidbody());
+    this.registry.add(entity, new RectangleCollider(width, height));
+    this.registry.add(entity, new Renderable());
+    this.registry.add(entity, new ColorTag(0x0000ff));
+    this.registry.add(entity, new SpriteTag(SpriteType.GROUND));
+    // this.registry.add(entity, new PortalGroundComponent());
+
+    const rigidbody = this.registry.get(entity, Rigidbody);
+    rigidbody.isStatic = true;
+    rigidbody.friction = 0;
+    rigidbody.frictionAir = 0;
+    rigidbody.frictionStatic = 0;
+
+    const collider = this.registry.get(entity, RectangleCollider);
+    collider.group = GROUND_GROUP;
   }
 
   // getters
