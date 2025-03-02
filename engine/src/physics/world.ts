@@ -245,7 +245,7 @@ export class PhysicsWorld extends System {
     if (typeof len === "number") {
       return this.queryRay(origin, Vec2.add(origin, Vec2.mul(dir, len)));
     } else {
-      return raycast(this.engine.world.bodies, origin, dir);
+      return raycast(Array.from(this.bodies.values()), origin, dir);
     }
   }
 
