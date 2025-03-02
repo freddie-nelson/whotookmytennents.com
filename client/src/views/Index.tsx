@@ -47,7 +47,7 @@ export function Index() {
 	};
 
 	return (
-		<main className="w-full h-screen flex flex-col gap-24 justify-center items-center p-4 bg-[url('assets/images/pub.png')] bg-no-repeat bg-cover bg-center">
+		<main className="w-full h-screen flex flex-col justify-center items-center p-4 bg-[url('assets/images/pub.png')] bg-no-repeat bg-cover bg-center">
 			{isConnecting && <LoadingOverlay text="Connecting" />}
 
 			<div className="flex flex-col gap-4 max-w-2xl w-full bg-tred bg-opacity-75 p-8 rounded-3xl">
