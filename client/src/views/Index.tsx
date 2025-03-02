@@ -46,54 +46,61 @@ export function Index() {
 		setIsConnecting(false);
 	};
 
-	return (
-		<main className="w-full h-screen flex flex-col justify-center items-center p-4 bg-[url('assets/images/pub.png')] bg-no-repeat bg-cover bg-center">
-			{isConnecting && <LoadingOverlay text="Connecting" />}
+  return (
+    <main className="w-full h-screen bg-[url('static/menu.png')] bg-no-repeat bg-cover bg-center flex justify-between">
 
-			<div className="flex flex-col gap-4 max-w-2xl w-full bg-tred bg-opacity-75 p-8 rounded-3xl">
-				<h1 className="text-5xl font-bold text-tyellow">Who Took Ma Tennents?</h1>
+      {isConnecting && <LoadingOverlay text="Connecting" />}
 
-				<div className="flex flex-col">
-					<label className="text-lg font-bold text-tyellow" htmlFor="name">
-						Username
-					</label>
-					<input
-						className="border-4 border-tyellow bg-transparent rounded-md p-3 text-lg text-tyellow flex flex-col"
-						name="name"
-						value={name}
-						onChange={(e) => setName(e.target.value)}
-					/>
-				</div>
+      <div className="flex-space-4 flex w-1/2 items-center justify-center flex-col h-screen">
+        <div className="">
+          <input
+            className="border border-tred rounded-md p-3 m-2 text-lg flex flex-col"
+            name="name"
+            placeholder="Enter a username"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
 
-				<Button
-					onClick={() =>
-						submit(async () =>
-							createRoom({
-								name,
-							})
-						)
-					}
-				>
-					Create Room
-				</Button>
+        <Button
+          className="buttonStyle"
+          onClick={() =>
+            submit(async () =>
+              createRoom({
+                name,
+              })
+            )
+          }
+        >
+          Create Room
+        </Button>
 
-				<Button
-					onClick={() =>
-						submit(async () => {
-							const id = prompt("Room id: ");
-							if (!id) {
-								return null;
-							}
+        <Button
+          className="buttonStyle"
+          onClick={() =>
+            submit(async () => {
+              const id = prompt("Room id: ");
+              if (!id) {
+                return null;
+              }
 
-							return await joinRoomById(id, {
-								name,
-							});
-						})
-					}
-				>
-					Join Room
-				</Button>
-			</div>
-		</main>
-	);
+              return await joinRoomById(id, {
+                name,
+              });
+            })
+          }
+        >
+          Join Room
+        </Button>
+      </div>
+
+      <div className="flex w-1/2 items-center justify-center flex-col h-screen">
+        <h1 className="tennentTitle">Who</h1>
+        <h1 className="tennentTitle">Took</h1>
+        <h1 className="tennentTitle">Ma</h1>
+        <h1 className="tennentTitle">Tennents?</h1>
+      </div>
+
+    </main>
+  );
 }

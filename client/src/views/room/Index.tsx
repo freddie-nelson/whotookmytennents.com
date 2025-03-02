@@ -33,42 +33,47 @@ export function RoomIndex() {
 	const you = state.players.get(room.sessionId);
 	const needToStart = Math.max(0, state.roomInfo.playersToStart - state.players.size);
 
-	return (
-		<main className="w-full h-screen flex flex-col justify-center items-center p-4 bg-[url('assets/images/pub.png')] bg-no-repeat bg-cover bg-center">
-			<div className="flex flex-col gap-4 max-w-2xl w-full bg-tred bg-opacity-75 p-8 rounded-3xl">
-				<h1 className="text-5xl font-bold text-tyellow">{host?.name}'s Room</h1>
+  return (
+    <main className="w-full h-screen flex flex-col justify-center items-center p-4 bg-[url('static/tennents-guy.jpeg')] bg-no-repeat bg-cover bg-center">
+      <h1 className="text-6xl font-bold text-tyellow mb-8 bg-tred bg-opacity-60 p-4 rounded">{host?.name}'s Room</h1>
 
-				{you?.isHost && (
-					<Button onClick={start}>
-						{!state.roomInfo.startable
-							? `Need ${needToStart} more players to start`
-							: state.roomInfo.started
-							? "Starting..."
-							: "Start Game"}
-					</Button>
-				)}
-				<div className="flex justify-between w-full items-center font-bold text-lg text-tyellow">
-					<p>Players</p>
-					<p>
-						{state.players.size} / {state.roomInfo.maxPlayers}
-					</p>
-				</div>
+      <div className="flex flex-col gap-4 max-w-md w-full">
+        {you?.isHost && (
+          <Button className="bg-tyellow text-[#b23602] m-1 hover:bg-tred transition duration-100 hover:text-tyellow transition duration-100 " onClick={start}>
+            {!state.roomInfo.startable
+              ? `Need ${needToStart} more players to start`
+              : state.roomInfo.started
+              ? "Starting..."
+              : "Start Game"}
+          </Button>
+        )}
 
-				<div className="flex flex-col gap-4 w-full">
-					{players.map((p) => (
-						<div
-							key={p.sessionId}
-							className="flex justify-between w-full items-center font-bold text-tred bg-tyellow p-3 rounded-md"
-						>
-							<p>{p.name}</p>
-							<div className="flex gap-2">
-								{p.isHost && <p>Host</p>}
-								{p.sessionId === room.sessionId && <p>You</p>}
-							</div>
-						</div>
-					))}
-				</div>
-			</div>
-		</main>
-	);
+        <div className="bg-tred bg-opacity-60 p-4 rounded">
+    
+          <div className="flex justify-between w-full items-center font-bold text-tyellow">
+            <p>Players</p>
+            <p>
+              {state.players.size} / {state.roomInfo.maxPlayers}
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-4 w-full">
+            {players.map((p) => (
+              <div
+                key={p.sessionId}
+                className="flex justify-between w-full items-center font-bold text-tyellow  p-3 rounded-md"
+              >
+                <p>{p.name}</p>
+                <div className="flex gap-2">
+                  {p.isHost && <p>Host</p>}
+                  {p.sessionId === room.sessionId && <p>You</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          </div>        
+      </div>
+    </main>
+  );
 }

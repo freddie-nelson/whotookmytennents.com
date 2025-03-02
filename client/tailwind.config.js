@@ -4,8 +4,8 @@ export default {
   theme: {
     extend: {
       colors : {
-        tred : '#B23602',
-        tyellow : '#ffce00'
+        tred : '#b23602',
+        tyellow : '#ffce00',
       }
     },
   },
