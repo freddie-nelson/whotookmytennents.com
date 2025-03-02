@@ -165,7 +165,7 @@ export default class Game {
   }
 
   public createLevel() {
-    const level = levels[0];
+    const level = levels[2];
     const spawns = [];
 
     for (const { type, x, y, width, height } of level) {
