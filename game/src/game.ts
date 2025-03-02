@@ -307,6 +307,9 @@ export default class Game {
 
 			if (goal.player1Collided && goal.player2Collided) {
 				this._levelsCompleted++;
+				if (this._levelsCompleted >= levels.length) {
+					this._levelsCompleted = 0;
+				}
 				console.log("Both players reached the goal!");
 				this.clearAndLoadLevelAndPlayers(this._levelsCompleted, players);
 			}
