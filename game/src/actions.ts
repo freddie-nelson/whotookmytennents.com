@@ -7,18 +7,20 @@ import { GROUND_GROUP } from "@shared/src/groups";
 import Player from "@state/src/Player";
 import { CombatType, PortalType } from "./systems/attackSystem";
 import { PlayerAttackMode, PlayerComponent } from "./components/player";
+import { SpriteTag } from "@engine/src/rendering/spriteTag";
 
 export enum ActionType {
   MOVE_PLAYER,
   TOGGLE_ATTACK_MODE,
   PORTAL_ATTACK,
   COMBAT_ATTACK,
+  MOUSE_DIR,
 }
 
-export const PLAYER_MOVE_FORCE = 0.6;
+export const PLAYER_MOVE_FORCE = 0.5;
 export const PLAYER_AIR_MOVE_FORCE = PLAYER_MOVE_FORCE / 2;
 export const PLAYER_WALL_JUMP_FORCE = 0.5;
-export const PLAYER_JUMP_FORCE = 1.75;
+export const PLAYER_JUMP_FORCE = 1.4;
 
 export interface MovePlayerData {
   player: Player;
@@ -111,6 +113,13 @@ export const toggleAttackModeAction: ActionHandler<ActionType, ToggleAttackModeD
 
   const playerComponent = registry.get(player.entity, PlayerComponent);
   playerComponent.attackMode = type;
+
+  const portalGunSpriteTag = registry.get(player.portalGunEntity, SpriteTag);
+  if (type === PlayerAttackMode.PORTAL_MODE) {
+    portalGunSpriteTag.opacity = 1;
+  } else {
+    portalGunSpriteTag.opacity = 0;
+  }
 };
 
 export const toggleAttackModeActionValidator: ActionDataValidator<ActionType> = (action, data) => {
@@ -130,6 +139,9 @@ export const portalAttackAction: ActionHandler<ActionType, PortalAttackData> = (
   if (!registry.has(player.entity)) {
     return;
   }
+
+  const physics = engine.physics;
+  physics.queryRay();
 };
 
 export const portalAttackActionValidator: ActionDataValidator<ActionType> = (action, data) => {
@@ -163,4 +175,17 @@ export const combatAttackActionValidator: ActionDataValidator<ActionType> = (act
     typeof data.type === "number" &&
     typeof data.mouseDir === "object"
   );
+};
+
+export interface MouseDirData {
+  player: Player;
+  dir: Vec2;
+}
+
+export const mouseDirAction: ActionHandler<ActionType, MouseDirData> = (engine, action, data, dt) => {
+  data.player.mouseDir = data.dir;
+};
+
+export const mouseDirActionValidator: ActionDataValidator<ActionType> = (action, data) => {
+  return data.player && typeof data.player === "object" && typeof data.dir === "object";
 };

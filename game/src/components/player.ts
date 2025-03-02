@@ -9,10 +9,12 @@ export enum PlayerAttackMode {
 export class PlayerComponent extends Component {
 	public static readonly COMPONENT_ID: number = 0;
 
+	@type("number") playerNumber: number;
 	@type("number") attackMode: PlayerAttackMode = PlayerAttackMode.PORTAL_MODE;
 
-	constructor(attackMode: PlayerAttackMode = PlayerAttackMode.PORTAL_MODE) {
+	constructor(playerNumber: number, attackMode: PlayerAttackMode = PlayerAttackMode.PORTAL_MODE) {
 		super(PlayerComponent.COMPONENT_ID);
+		this.playerNumber = playerNumber;
 		this.attackMode = attackMode;
 	}
 }

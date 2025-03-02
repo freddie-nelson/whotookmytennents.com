@@ -238,7 +238,7 @@ export class PhysicsWorld extends System {
    */
   public queryRay(origin: Vec2, dir: Vec2, len: number): RayCol[];
 
-  public queryRay(origin: Vec2, dir: Vec2, len?: number): RayCol[] {
+  public queryRay(origin: Vec2, dir: Vec2, len?: number) {
     if (typeof len === "number") {
       return this.queryRay(origin, Vec2.add(origin, Vec2.mul(dir, len)));
     } else {

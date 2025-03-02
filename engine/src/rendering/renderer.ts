@@ -107,13 +107,15 @@ export interface SpriteCreatorData {
 }
 
 export type SpriteCreatorCreate = (data: SpriteCreatorData) => ContainerChild;
-export type SpriteCreatorUpdate = (data: SpriteCreatorData) => void;
+export type SpriteCreatorUpdate = (data: SpriteCreatorData) => ContainerChild | void;
 export type SpriteCreatorDelete = (data: SpriteCreatorData) => void;
 
 /**
  * A sprite creator.
  *
  * Sprite creators are used to create, update and delete sprites in the renderer.
+ *
+ * If the sprite creator update method returns a `ContainerChild`, delete will be called and the returned `ContainerChild` will replace the old one.
  *
  * @warning Your create and delete methods are responsible for adding/removing the sprite from the world container. The renderer will not do this for you.
  */
@@ -146,6 +148,8 @@ export interface SpriteCreator {
 	 * @param entity The entity to update the sprite for
 	 * @param sprite The sprite to update
 	 * @param dt The delta time since the last engine update
+	 *
+	 * @returns The new created sprite
 	 */
 	readonly update?: SpriteCreatorUpdate;
 	/**
@@ -427,7 +431,11 @@ export class Renderer extends System {
 
 				// update sprite
 				const sprite = entitySprites.get(creator)!;
-				creator.update?.(this.createSpriteCreatorData(engine, registry, entity, sprite, dt));
+				const newSprite = creator.update?.(this.createSpriteCreatorData(engine, registry, entity, sprite, dt));
+				if (newSprite) {
+					creator.delete?.(this.createSpriteCreatorData(engine, registry, entity, sprite, dt));
+					entitySprites.set(creator, newSprite);
+				}
 			}
 		}
 	}
