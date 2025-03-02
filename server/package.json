@@ -7,6 +7,7 @@
     "start": "dotenvx run -f .env.production -- node build/server/src/index.js",
     "start:staging": "dotenvx run -f .env.staging -- node build/server/src/index.js",
     "start:dev": "dotenvx run -f .env.development -- node build/server/src/index.js",
+    "setup": "cd ../shared && pnpm i && cd ../engine && pnpm i && cd ../game && pnpm i && cd ../state && pnpm i && cd ../server",
     "dev": "node dev.mjs",
     "build": "pnpm clean && tsc && tscpaths -p tsconfig.json -s ../ -o ./build",
     "clean": "rimraf build",
