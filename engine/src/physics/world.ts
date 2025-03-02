@@ -41,6 +41,7 @@ export class PhysicsWorld extends System {
   private readonly matterBodies: Map<TypedBody, string> = new Map();
   private readonly constraints: Map<string, Matter.Constraint> = new Map();
   private readonly options: PhysicsWorldOptions;
+  private readonly collisionEvents: Map<ColliderEvent, Matter.Pair[]> = new Map();
 
   private lastRegistry?: Registry;
 
@@ -196,6 +197,8 @@ export class PhysicsWorld extends System {
       transform.position.y = body.position.y;
       transform.rotation = body.angle;
     }
+
+    this.flushMatterCollisionEvents();
   };
 
   /**
@@ -358,16 +361,31 @@ export class PhysicsWorld extends System {
 
   private setupMatterEvents() {
     Matter.Events.on(this.engine, "collisionStart", (event) =>
-      this.onMatterCollisionEvent(ColliderEvent.COLLISION_START, event.pairs)
+      this.queueMatterCollisionEvent(ColliderEvent.COLLISION_START, event.pairs)
     );
 
     Matter.Events.on(this.engine, "collisionEnd", (event) =>
-      this.onMatterCollisionEvent(ColliderEvent.COLLISION_END, event.pairs)
+      this.queueMatterCollisionEvent(ColliderEvent.COLLISION_END, event.pairs)
     );
 
     Matter.Events.on(this.engine, "collisionActive", (event) =>
-      this.onMatterCollisionEvent(ColliderEvent.COLLISION_ACTIVE, event.pairs)
+      this.queueMatterCollisionEvent(ColliderEvent.COLLISION_ACTIVE, event.pairs)
     );
+  }
+
+  private queueMatterCollisionEvent(type: ColliderEvent, pairs: Matter.Pair[]) {
+    const existing = this.collisionEvents.get(type) || [];
+    existing.push(...pairs);
+
+    this.collisionEvents.set(type, existing);
+  }
+
+  private flushMatterCollisionEvents() {
+    for (const [type, pairs] of this.collisionEvents) {
+      this.onMatterCollisionEvent(type, pairs);
+    }
+
+    this.collisionEvents.clear();
   }
 
   private onMatterCollisionEvent(type: ColliderEvent, pairs: Matter.Pair[]) {
