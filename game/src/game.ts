@@ -162,19 +162,19 @@ export default class Game {
 		const level = levels[0];
 		const spawns = [];
 
-		for (const { type, data } of level) {
+		for (const { type, x, y, width, height } of level) {
 			switch (type) {
 				case "ground":
-					this.createGround(data.x!, data.y!, data.width!, data.height!);
+					this.createGround(x, -y, width, height);
 					break;
 
 				case "spike":
-					this.createSpike(data.x!, data.y!, data.width!, data.height!);
+					this.createSpike(x, -y, width, height);
 					break;
 
 				case "spawn":
-					this.createSpawn(data.x!, data.y!);
-					spawns.push(new Vec2(data.x!, data.y!));
+					this.createSpawn(x, -y, width, height);
+					spawns.push(new Vec2(x, -y));
 					break;
 
 				default:
@@ -236,12 +236,12 @@ export default class Game {
 		});
 	}
 
-	private createSpawn(x: number, y: number) {
+	private createSpawn(x: number, y: number, width: number, height: number) {
 		const entity = this.registry.create();
 		this.registry.add(entity, new Transform(new Vec2(x, y)));
 		this.registry.add(entity, new Renderable());
 		this.registry.add(entity, new ColorTag(0x00ff00));
-		this.registry.add(entity, new SpriteTag(SpriteType.NONE, 1, 1));
+		this.registry.add(entity, new SpriteTag(SpriteType.NONE, width, height));
 	}
 
 	// getters
